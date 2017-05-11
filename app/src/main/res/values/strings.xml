@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">MercatorPuzzle</string>
+    <string name="app_name">Mercator Puzzle</string>
+    <string name="mapbox_access_token">pk.eyJ1IjoiYWxleGFsMSIsImEiOiJjajJoenhoNHUwMDFwMnduc3BwcnZnaXM5In0.R5AyIbwsSA16udnbOzVzfQ</string>
 </resources>
