@@ -1,6 +1,7 @@
 package com.alex_aladdin.mercatorpuzzle
 
 import android.graphics.Color
+import android.graphics.PixelFormat
 import android.graphics.PointF
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -30,6 +31,7 @@ class MapActivity : AppCompatActivity() {
         mapView.getMapAsync { mapboxMap ->
             // Save object
             this.mapboxMap = mapboxMap
+            mySurfaceView.mapboxMap = mapboxMap
 
             // Configure appearance
             mapboxMap.uiSettings.isRotateGesturesEnabled = false
@@ -38,7 +40,11 @@ class MapActivity : AppCompatActivity() {
             mapboxMap.uiSettings.isLogoEnabled = false
 
             polygon = drawPolygon()
+            mySurfaceView.polygon = polygon
         }
+
+        mySurfaceView.setZOrderMediaOverlay(true)               // Show MySurfaceView above MapView
+        mySurfaceView.holder.setFormat(PixelFormat.TRANSPARENT) // Make MySurfaceView transparent
     }
 
     /**
