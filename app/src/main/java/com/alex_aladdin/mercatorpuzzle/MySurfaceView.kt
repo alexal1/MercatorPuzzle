@@ -24,8 +24,7 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
 
     constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(context, attrs, defStyle)
 
-    val LOG_TAG = "MySurfaceView"
-
+    private val LOG_TAG = "MercatorMySurfaceView"
     var mapboxMap: MapboxMap? = null
     var polygon: Polygon? = null
     var drawThread: DrawThread? = null
@@ -100,9 +99,11 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
      * Start background thread that performs drawing on this SurfaceView.
      */
     private fun startDrawThread() {
-        drawThread = DrawThread(holder)
-        drawThread!!.runFlag = true
-        drawThread!!.start()
+        if (mapboxMap != null && polygon != null) {
+            drawThread = DrawThread(holder, mapboxMap!!, polygon!!)
+            drawThread!!.runFlag = true
+            drawThread!!.start()
+        }
     }
 
     /**
