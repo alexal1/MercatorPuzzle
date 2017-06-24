@@ -1,25 +1,27 @@
 package com.alex_aladdin.mercatorpuzzle
 
-import android.graphics.*
+import android.graphics.Canvas
+import android.graphics.PointF
+import android.graphics.PorterDuff
 import android.util.Log
 import android.view.SurfaceHolder
-import com.mapbox.mapboxsdk.annotations.Polygon
 import com.mapbox.mapboxsdk.geometry.LatLng
-import com.mapbox.mapboxsdk.maps.MapboxMap
+import com.mapbox.mapboxsdk.maps.Projection
 
 /**
  * Thread for drawing on MySurfaceView.
  */
 class DrawThread(val surfaceHolder: SurfaceHolder,
-                 val mapboxMap: MapboxMap,
-                 val polygon: Polygon) : Thread() {
+                 val projection: Projection,
+                 val country: Country) : Thread() {
 
     private val LOG_TAG = "MercatorDrawThread"
     var runFlag: Boolean = false    // DrawThread is running at the moment
     var touchPoint: PointF? = null  // Point on the screen where user touches it
 
     override fun run() {
-        val centerCoordinates: LatLng = polygon.center()
+        val centerCoordinates: LatLng = country.center()
+        Log.i(LOG_TAG, "Center coordinates = $centerCoordinates")
         var util: SphericalUtil
         var canvas: Canvas?
 
@@ -32,26 +34,15 @@ class DrawThread(val surfaceHolder: SurfaceHolder,
                     // Clear canvas
                     canvas!!.drawColor(0, PorterDuff.Mode.CLEAR)
 
-                    // Draw rectangle
-                    val paint = Paint()
-                    paint.color = Color.RED
+                    // Draw country
                     touchPoint?.let {
-                        val touchCoordinates: LatLng = mapboxMap.projection.fromScreenLocation(it)
+                        val touchCoordinates: LatLng = projection.fromScreenLocation(it)
                         Log.i(LOG_TAG, "Touch coordinates = $touchCoordinates")
 
                         util = SphericalUtil(from = centerCoordinates, to = touchCoordinates)
-                        val newPoints: ArrayList<PointF> = ArrayList(polygon.points
-                                .map { util.getNewCoordinates(it) }
-                                .map { mapboxMap.projection.toScreenLocation(it) })
+                        country.updateVertices { util.getNewCoordinates(it)!! }
 
-                        // Draw polygon by newPoints array
-                        val path: Path = Path()
-                        path.moveTo(newPoints[0].x, newPoints[0].y)
-                        newPoints.removeAt(0)
-                        for (point in newPoints) {
-                            path.lineTo(point.x, point.y)
-                        }
-                        canvas!!.drawPath(path, paint)
+                        country.drawOnCanvas(canvas!!, projection = { projection.toScreenLocation(it) })
                     }
                 }
             }
@@ -82,20 +73,6 @@ class DrawThread(val surfaceHolder: SurfaceHolder,
                 surfaceHolder.unlockCanvasAndPost(it)
             }
         }
-    }
-
-    /**
-     * Get center of polygon.
-     */
-    private fun Polygon.center(): LatLng {
-        val points = this.points
-        val latitudes = points.map { it.latitude }.sorted()
-        val longitudes = points.map { it.longitude }.sorted()
-        val minLat: Double = latitudes.first()
-        val maxLat: Double = latitudes.last()
-        val minLng: Double = longitudes.first()
-        val maxLng: Double = longitudes.last()
-        return LatLng((minLat + maxLat) / 2.0, (minLng + maxLng) / 2.0)
     }
 
 }

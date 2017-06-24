@@ -1,21 +1,17 @@
 package com.alex_aladdin.mercatorpuzzle
 
-import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.PointF
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import com.mapbox.mapboxsdk.Mapbox
-import com.mapbox.mapboxsdk.annotations.Polygon
-import com.mapbox.mapboxsdk.annotations.PolygonOptions
-import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import kotlinx.android.synthetic.main.activity_map.*
 
 class MapActivity : AppCompatActivity() {
 
     var mapboxMap: MapboxMap? = null
-    var polygon: Polygon? = null
+    var country: Country? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,8 +35,9 @@ class MapActivity : AppCompatActivity() {
             mapboxMap.uiSettings.isAttributionEnabled = false
             mapboxMap.uiSettings.isLogoEnabled = false
 
-            polygon = drawPolygon()
-            mySurfaceView.polygon = polygon
+            country = createCountry()
+            country!!.drawOnMap(mapboxMap)
+            mySurfaceView.country = country
         }
 
         mySurfaceView.setZOrderMediaOverlay(true)               // Show MySurfaceView above MapView
@@ -48,28 +45,34 @@ class MapActivity : AppCompatActivity() {
     }
 
     /**
-     *  Draw square on the map at the center of the screen.
+     * Create test country.
      */
-    private fun drawPolygon(): Polygon {
+    private fun createCountry(): Country {
         val delta: Float = 100f
         val x: Float = mapView.width.toFloat() / 2
         val y: Float = mapView.height.toFloat() / 2
 
-        val points: List<PointF> = listOf(
-                PointF(x - delta, y - delta),
-                PointF(x + delta, y - delta),
-                PointF(x + delta, y + delta),
-                PointF(x - delta, y + delta)
+        val points1: List<PointF> = listOf(
+                PointF(x + delta / 2, y - delta / 2),
+                PointF(x + delta * 3/2, y - delta / 2),
+                PointF(x + delta * 3/2, y + delta / 2),
+                PointF(x + delta / 2, y + delta / 2)
         )
 
-        val projection = mapboxMap!!.projection
-        val coordinates: List<LatLng> = points.map { projection.fromScreenLocation(it) }
+        val points2: List<PointF> = listOf(
+                PointF(x - delta / 2, y - delta / 2),
+                PointF(x - delta * 3/2, y - delta / 2),
+                PointF(x - delta * 3/2, y + delta / 2),
+                PointF(x - delta / 2, y + delta / 2)
+        )
 
-        val square = mapboxMap!!.addPolygon(PolygonOptions()
-                .addAll(coordinates)
-                .fillColor(Color.parseColor("#ff0000")))
-
-        return square
+        return Country(
+                vertices = arrayListOf(
+                        ArrayList(points1.map { mapboxMap!!.projection.fromScreenLocation(it) }),
+                        ArrayList(points2.map { mapboxMap!!.projection.fromScreenLocation(it) })
+                ),
+                id = "TEST",
+                name = "Test Country")
     }
 
     public override fun onStart() {

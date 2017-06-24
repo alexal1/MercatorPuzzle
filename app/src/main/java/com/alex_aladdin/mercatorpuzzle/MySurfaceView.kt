@@ -7,11 +7,8 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.view.SurfaceView
-import com.mapbox.mapboxsdk.annotations.Polygon
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapboxMap
-import com.mapbox.services.commons.models.Position
-import com.mapbox.services.commons.turf.TurfJoins
 
 /**
  * Custom SurfaceView that's used to draw polygons.
@@ -26,7 +23,7 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
 
     private val LOG_TAG = "MercatorMySurfaceView"
     var mapboxMap: MapboxMap? = null
-    var polygon: Polygon? = null
+    var country: Country? = null
     var drawThread: DrawThread? = null
     var dragInProcess: Boolean = false
 
@@ -47,29 +44,22 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         if (event?.action == MotionEvent.ACTION_DOWN) {
-            // Check out is touch inside polygon or not
-            if (mapboxMap == null || polygon == null) {
+            // Check out if touch is inside country or not
+            if (mapboxMap == null || country == null) {
                 return false
             }
             else {
                 val touchPoint: PointF = PointF(event.x, event.y)
                 val touchCoordinates: LatLng = mapboxMap!!.projection.fromScreenLocation(touchPoint)
+                val isInside = country!!.contains(touchCoordinates)
 
-                val polygonPositions: ArrayList<Position> = arrayListOf()
-                polygon!!.points.mapTo(polygonPositions, { point ->
-                    Position.fromCoordinates(point.longitude, point.latitude)
-                })
-
-                val isInside: Boolean = TurfJoins.inside(Position.fromCoordinates(
-                        touchCoordinates.longitude,
-                        touchCoordinates.latitude
-                ), polygonPositions)
-
-                // If touch is inside polygon, start dragging
-                if (isInside)
+                // If touch is inside country, start dragging
+                if (isInside) {
+                    country!!.removeFromMap()
                     startDrawThread()
+                }
                 dragInProcess = isInside
-                Log.i(LOG_TAG, "Touch is inside polygon: $isInside")
+                Log.i(LOG_TAG, "Touch is inside country: $isInside")
 
                 return isInside
             }
@@ -86,6 +76,9 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
             if (dragInProcess) {
                 dragInProcess = false
                 stopDrawThread()
+                mapboxMap?.let {
+                    country?.drawOnMap(it)
+                }
                 return true
             }
             else
@@ -99,8 +92,8 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
      * Start background thread that performs drawing on this SurfaceView.
      */
     private fun startDrawThread() {
-        if (mapboxMap != null && polygon != null) {
-            drawThread = DrawThread(holder, mapboxMap!!, polygon!!)
+        if (mapboxMap != null && country != null) {
+            drawThread = DrawThread(holder, mapboxMap!!.projection, country!!)
             drawThread!!.runFlag = true
             drawThread!!.start()
         }
