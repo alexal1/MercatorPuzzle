@@ -1,7 +1,6 @@
 package com.alex_aladdin.mercatorpuzzle
 
 import android.graphics.PixelFormat
-import android.graphics.PointF
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import com.mapbox.mapboxsdk.Mapbox
@@ -35,9 +34,7 @@ class MapActivity : AppCompatActivity() {
             mapboxMap.uiSettings.isAttributionEnabled = false
             mapboxMap.uiSettings.isLogoEnabled = false
 
-            country = createCountry()
-            country!!.drawOnMap(mapboxMap)
-            mySurfaceView.country = country
+            addCountry()
         }
 
         mySurfaceView.setZOrderMediaOverlay(true)               // Show MySurfaceView above MapView
@@ -45,34 +42,14 @@ class MapActivity : AppCompatActivity() {
     }
 
     /**
-     * Create test country.
+     * Add country to the map.
      */
-    private fun createCountry(): Country {
-        val delta: Float = 100f
-        val x: Float = mapView.width.toFloat() / 2
-        val y: Float = mapView.height.toFloat() / 2
-
-        val points1: List<PointF> = listOf(
-                PointF(x + delta / 2, y - delta / 2),
-                PointF(x + delta * 3/2, y - delta / 2),
-                PointF(x + delta * 3/2, y + delta / 2),
-                PointF(x + delta / 2, y + delta / 2)
-        )
-
-        val points2: List<PointF> = listOf(
-                PointF(x - delta / 2, y - delta / 2),
-                PointF(x - delta * 3/2, y - delta / 2),
-                PointF(x - delta * 3/2, y + delta / 2),
-                PointF(x - delta / 2, y + delta / 2)
-        )
-
-        return Country(
-                vertices = arrayListOf(
-                        ArrayList(points1.map { mapboxMap!!.projection.fromScreenLocation(it) }),
-                        ArrayList(points2.map { mapboxMap!!.projection.fromScreenLocation(it) })
-                ),
-                id = "TEST",
-                name = "Test Country")
+    private fun addCountry() {
+        GeoJsonParser(completion = { countries ->
+            country = countries.first()
+            country!!.drawOnMap(mapboxMap!!)
+            mySurfaceView.country = country
+        }).execute("RUS")
     }
 
     public override fun onStart() {
