@@ -20,10 +20,9 @@ class DrawThread(val surfaceHolder: SurfaceHolder,
     var touchPoint: PointF? = null  // Point on the screen where user touches it
 
     override fun run() {
-        val centerCoordinates: LatLng = country.center()
-        Log.i(LOG_TAG, "Center coordinates = $centerCoordinates")
-        var util: SphericalUtil
         var canvas: Canvas?
+
+        Log.i(LOG_TAG, "Center: ${country.targetCenter}")
 
         // Start drawing
         while (runFlag) {
@@ -37,11 +36,7 @@ class DrawThread(val surfaceHolder: SurfaceHolder,
                     // Draw country
                     touchPoint?.let {
                         val touchCoordinates: LatLng = projection.fromScreenLocation(it)
-                        Log.i(LOG_TAG, "Touch coordinates = $touchCoordinates")
-
-                        util = SphericalUtil(from = centerCoordinates, to = touchCoordinates)
-                        country.updateVertices { util.getNewCoordinates(it)!! }
-
+                        country.updateVertices(newCenter = touchCoordinates)
                         country.drawOnCanvas(canvas!!, projection = { projection.toScreenLocation(it) })
                     }
                 }

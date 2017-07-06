@@ -6,44 +6,27 @@ import com.mapbox.mapboxsdk.annotations.Polygon
 import com.mapbox.mapboxsdk.annotations.PolygonOptions
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapboxMap
+import com.mapbox.services.api.utils.turf.TurfJoins
 import com.mapbox.services.commons.models.Position
-import com.mapbox.services.commons.turf.TurfJoins
 
 /**
  * This class represents one draggable country.
  * Country's vertices are stored as a list of polygons, and each polygon is a list of coordinates.
  */
-class Country(private val vertices: ArrayList<ArrayList<LatLng>>, val id: String, val name: String) {
+class Country(private var vertices: ArrayList<ArrayList<LatLng>>, val id: String, val name: String) {
 
     val LOG_TAG = "MercatorCountry"
-    private var lastFixedVertices = getVertices()               // Vertices are being fixed on drop
-    private val polygonsOnMap: ArrayList<Polygon> = ArrayList() // Saved objects of polygons allow us to remove them
+    val targetCenter = getCenter()
+    private val relativeVertices = RelativeVertices(center = targetCenter, coordinates = vertices)
+    private val polygonsOnMap: ArrayList<Polygon> = ArrayList()
 
     /**
-     * Save current vertices into a separate instance.
-     */
-    private fun getVertices(): ArrayList<ArrayList<LatLng>> {
-        val newVertices: ArrayList<ArrayList<LatLng>> = ArrayList()
-        vertices.forEachIndexed { i, polygon ->
-            newVertices.add(i, ArrayList<LatLng>())
-            polygon.forEachIndexed { j, latLng ->
-                newVertices[i].add(j, latLng)
-            }
-        }
-        return newVertices
-    }
-
-    /**
-     * Update all country's vertices by transforming last fixed vertices.
+     * Update all Country's vertices by moving them according to the new Country's center.
      *
-     * @param updateFunction function that transforms coordinates
+     * @param newCenter coordinates of a new Country's center
      */
-    fun updateVertices(updateFunction: (LatLng) -> LatLng) {
-        lastFixedVertices.forEachIndexed { i, polygon ->
-            polygon.forEachIndexed { j, latLng ->
-                vertices[i][j] = updateFunction(latLng)
-            }
-        }
+    fun updateVertices(newCenter: LatLng) {
+        vertices = relativeVertices.computeAbsoluteCoordinates(newCenter = newCenter)
     }
 
     /**
@@ -98,30 +81,44 @@ class Country(private val vertices: ArrayList<ArrayList<LatLng>>, val id: String
             val newPolygon = mapboxMap.addPolygon(polygonOptions)
             polygonsOnMap.add(newPolygon)
         }
-
-        // Fix vertices
-        lastFixedVertices = getVertices()
     }
 
     /**
      * Calculate country's center.
      */
-    fun center(): LatLng {
+    fun getCenter(): LatLng {
+        // We find center latitude just by taking half-sum of min and max latitudes
+        // To find center longitude we should firstly find boundary longitudes of the country
+        val longitudes: ArrayList<Double> = ArrayList()
+
         var minLat: Double = vertices[0][0].latitude
         var maxLat: Double = vertices[0][0].latitude
-        var minLng: Double = vertices[0][0].longitude
-        var maxLng: Double = vertices[0][0].longitude
-
         for (polygon in vertices) {
             for (latLng in polygon) {
+                longitudes.add(latLng.longitude)
                 if (latLng.latitude < minLat) minLat = latLng.latitude
                 if (latLng.latitude > maxLat) maxLat = latLng.latitude
-                if (latLng.longitude < minLng) minLng = latLng.longitude
-                if (latLng.longitude > maxLng) maxLng = latLng.longitude
             }
         }
+        val centerLat: Double = (minLat + maxLat) / 2
 
-        return LatLng((minLat + maxLat) / 2.0, (minLng + maxLng) / 2.0)
+        longitudes.sort()
+        val n = longitudes.size - 1
+        val distances: ArrayList<Double> = ArrayList()
+        (0..n-1).forEach { i ->
+            distances.add(i, longitudes[i+1] - longitudes[i])
+        }
+        distances.add(n, 360.0 - longitudes[n] + longitudes[0])
+        val maxDistance: Int = distances.indices.maxBy { distances[it] } ?: -1
+
+        // Center longitude is a half-sum of country's longitude boundaries
+        val centerLng: Double = (longitudes[maxDistance] + longitudes[(maxDistance + 1) % n]) / 2
+        if (this.contains(LatLng(centerLat, centerLng))) {
+            return LatLng(centerLat, centerLng)
+        }
+        else {
+            return LatLng(centerLat, (centerLng + 180.0) % 360.0)
+        }
     }
 
     /**
