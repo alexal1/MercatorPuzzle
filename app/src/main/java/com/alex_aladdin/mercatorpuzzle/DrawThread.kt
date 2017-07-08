@@ -38,6 +38,8 @@ class DrawThread(val surfaceHolder: SurfaceHolder,
                         val touchCoordinates: LatLng = projection.fromScreenLocation(it)
                         country.updateVertices(newCenter = touchCoordinates)
                         country.drawOnCanvas(canvas!!, projection = { projection.toScreenLocation(it) })
+                        // Remove country's polygons from the map if they haven't been yet
+                        country.removeFromMap()
                     }
                 }
             }
@@ -45,27 +47,6 @@ class DrawThread(val surfaceHolder: SurfaceHolder,
                 canvas?.let {
                     surfaceHolder.unlockCanvasAndPost(it)
                 }
-            }
-        }
-
-        // Finally clear canvas
-        clearCanvas()
-    }
-
-    /**
-     * Just clear canvas.
-     */
-    private fun clearCanvas() {
-        var canvas: Canvas? = null
-        try {
-            canvas = surfaceHolder.lockCanvas(null)
-            synchronized (surfaceHolder) {
-                canvas!!.drawColor(0, PorterDuff.Mode.CLEAR)
-            }
-        }
-        finally {
-            canvas?.let {
-                surfaceHolder.unlockCanvasAndPost(it)
             }
         }
     }

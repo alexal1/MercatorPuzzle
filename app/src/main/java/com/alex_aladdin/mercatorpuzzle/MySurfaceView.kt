@@ -1,7 +1,9 @@
 package com.alex_aladdin.mercatorpuzzle
 
 import android.content.Context
+import android.graphics.Canvas
 import android.graphics.PointF
+import android.graphics.PorterDuff
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
@@ -55,7 +57,6 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
 
                 // If touch is inside country, start dragging
                 if (isInside) {
-                    country!!.removeFromMap()
                     startDrawThread()
                 }
                 dragInProcess = isInside
@@ -114,6 +115,24 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
                 catch (e: InterruptedException) {
                     Log.e(LOG_TAG, e.toString())
                 }
+            }
+        }
+    }
+
+    /**
+     * Just clear canvas.
+     */
+    fun clearCanvas() {
+        var canvas: Canvas? = null
+        try {
+            canvas = holder.lockCanvas(null)
+            synchronized (holder) {
+                canvas!!.drawColor(0, PorterDuff.Mode.CLEAR)
+            }
+        }
+        finally {
+            canvas?.let {
+                holder.unlockCanvasAndPost(it)
             }
         }
     }

@@ -34,6 +34,10 @@ class MapActivity : AppCompatActivity() {
             mapboxMap.uiSettings.isAttributionEnabled = false
             mapboxMap.uiSettings.isLogoEnabled = false
 
+            mapboxMap.setOnCameraMoveStartedistener {
+                mySurfaceView.clearCanvas()
+            }
+
             addCountry()
         }
 

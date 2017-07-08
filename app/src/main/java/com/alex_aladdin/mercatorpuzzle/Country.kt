@@ -144,8 +144,10 @@ class Country(private var vertices: ArrayList<ArrayList<LatLng>>, val id: String
      * Remove country from the map.
      */
     fun removeFromMap() {
-        polygonsOnMap.forEach { it.remove() }
-        polygonsOnMap.clear()
+        if (polygonsOnMap.isNotEmpty()) {
+            polygonsOnMap.forEach { it.remove() }
+            polygonsOnMap.clear()
+        }
     }
 
 }
