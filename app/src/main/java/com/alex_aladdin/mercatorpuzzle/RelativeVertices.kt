@@ -1,9 +1,9 @@
 package com.alex_aladdin.mercatorpuzzle
 
+import com.alex_aladdin.utils.position
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.services.api.utils.turf.TurfConstants
 import com.mapbox.services.api.utils.turf.TurfMeasurement
-import com.mapbox.services.commons.models.Position
 
 /**
  * One Country's vertices expressed through bearing + distance relatively to the center point.
@@ -21,14 +21,13 @@ class RelativeVertices(center: LatLng, coordinates: ArrayList<ArrayList<LatLng>>
     private fun initVertices(center: LatLng, coordinates: ArrayList<ArrayList<LatLng>>): ArrayList<ArrayList<Vertex>> {
         val result: ArrayList<ArrayList<Vertex>> = ArrayList()
 
-        val centerPos = Position.fromCoordinates(center.longitude, center.latitude)
+        val centerPos = center.position()
         coordinates.forEachIndexed { i, polygon ->
             result.add(i, ArrayList<Vertex>())
             polygon.forEachIndexed { j, latLng ->
-                val currentPos = Position.fromCoordinates(latLng.longitude, latLng.latitude)
                 val vertex = Vertex(
-                        bearing = TurfMeasurement.bearing(centerPos, currentPos),
-                        distance = TurfMeasurement.distance(centerPos, currentPos, TurfConstants.UNIT_DEFAULT)
+                        bearing = TurfMeasurement.bearing(centerPos, latLng.position()),
+                        distance = TurfMeasurement.distance(centerPos, latLng.position(), TurfConstants.UNIT_DEFAULT)
                 )
                 result[i].add(j, vertex)
             }
@@ -46,7 +45,7 @@ class RelativeVertices(center: LatLng, coordinates: ArrayList<ArrayList<LatLng>>
     fun computeAbsoluteCoordinates(newCenter: LatLng): ArrayList<ArrayList<LatLng>> {
         val result: ArrayList<ArrayList<LatLng>> = ArrayList()
 
-        val centerPos = Position.fromCoordinates(newCenter.longitude, newCenter.latitude)
+        val centerPos = newCenter.position()
         vertices.forEachIndexed { i, polygon ->
             result.add(i, ArrayList<LatLng>())
             polygon.forEachIndexed { j, vertex ->

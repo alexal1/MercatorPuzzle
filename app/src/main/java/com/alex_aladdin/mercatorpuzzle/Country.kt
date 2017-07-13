@@ -2,6 +2,8 @@ package com.alex_aladdin.mercatorpuzzle
 
 import android.graphics.*
 import android.util.Log
+import com.alex_aladdin.utils.distanceTo
+import com.alex_aladdin.utils.position
 import com.mapbox.mapboxsdk.annotations.Polygon
 import com.mapbox.mapboxsdk.annotations.PolygonOptions
 import com.mapbox.mapboxsdk.geometry.LatLng
@@ -41,6 +43,47 @@ class Country(private var vertices: ArrayList<ArrayList<LatLng>>, val id: String
         paint.isAntiAlias = true
         paint.style = Paint.Style.FILL_AND_STROKE
 
+        // Draw one polygon on canvas
+        fun drawPolygon(polygon: ArrayList<LatLng>) {
+            val path = Path()
+            val pointStart: PointF = projection(polygon[0])
+            path.moveTo(pointStart.x, pointStart.y)
+
+            // Part of polygon that got out to the opposite part of the screen
+            val cutPolygon = ArrayList<LatLng>()
+            // This flag shows if we if we are going through cutPolygon's points or not
+            var startCutPolygon = false
+            // Previous point
+            var prevPoint: PointF = pointStart
+            // Half of screen width
+            val halfScreen = MercatorApp.screen.x / 2
+            // Go through all points
+            (1..polygon.size-1).forEach { i ->
+                val point: PointF = projection(polygon[i])
+
+                if (point.distanceTo(prevPoint) > halfScreen) {
+                    startCutPolygon = !startCutPolygon
+                }
+
+                if (startCutPolygon) {
+                    cutPolygon.add(polygon[i])
+                }
+                else {
+                    path.lineTo(point.x, point.y)
+                }
+
+                prevPoint = point
+            }
+
+            path.close()
+            canvas.drawPath(path, paint)
+
+            // Recursive call to draw cutPolygon
+            if (cutPolygon.isNotEmpty()) {
+                drawPolygon(cutPolygon)
+            }
+        }
+
         for (polygon in vertices) {
             // Condition from GeoJSON specification
             if (polygon.size < 4) {
@@ -48,17 +91,7 @@ class Country(private var vertices: ArrayList<ArrayList<LatLng>>, val id: String
                 continue
             }
 
-            val path = Path()
-            val pointStart: PointF = projection(polygon[0])
-            path.moveTo(pointStart.x, pointStart.y)
-
-            (1..polygon.size-1).forEach { i ->
-                val point: PointF = projection(polygon[i])
-                path.lineTo(point.x, point.y)
-            }
-
-            path.close()
-            canvas.drawPath(path, paint)
+            drawPolygon(polygon)
         }
     }
 
@@ -125,19 +158,16 @@ class Country(private var vertices: ArrayList<ArrayList<LatLng>>, val id: String
      * Check if country contains given point or not.
      */
     fun contains(latLng: LatLng): Boolean {
-        var contains = false
         for (polygon in vertices) {
-            val polygonPositions: ArrayList<Position> = arrayListOf()
-            polygon.mapTo(polygonPositions, { point ->
-                Position.fromCoordinates(point.longitude, point.latitude)
-            })
+            val polygonPositions = ArrayList<Position>()
+            polygon.mapTo(polygonPositions, { it.position() })
 
-            if (TurfJoins.inside(Position.fromCoordinates(latLng.longitude, latLng.latitude), polygonPositions)) {
-                contains = true
+            if (TurfJoins.inside(latLng.position(), polygonPositions)) {
+                return true
             }
         }
 
-        return contains
+        return false
     }
 
     /**
