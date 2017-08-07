@@ -18,3 +18,8 @@ fun PointF.distanceTo(point: PointF): Float {
     return Math.sqrt(Math.pow(point.x.toDouble() - this.x.toDouble(), 2.0)
             + Math.pow(point.y.toDouble() - this.y.toDouble(), 2.0)).toFloat()
 }
+
+/**
+ * Cardinal directions.
+ */
+enum class CardinalDirection { NORTH, SOUTH, EAST, WEST }

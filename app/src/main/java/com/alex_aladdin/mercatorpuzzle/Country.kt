@@ -20,6 +20,7 @@ class Country(private var vertices: ArrayList<ArrayList<LatLng>>, val id: String
     val LOG_TAG = "MercatorCountry"
     val targetCenter = getCenter()
     private val relativeVertices = RelativeVertices(center = targetCenter, coordinates = vertices)
+    private val latitudeBoundaries = LatitudeBoundaries(center = targetCenter, coordinates = vertices)
     private val polygonsOnMap: ArrayList<Polygon> = ArrayList()
 
     /**
@@ -28,6 +29,7 @@ class Country(private var vertices: ArrayList<ArrayList<LatLng>>, val id: String
      * @param newCenter coordinates of a new Country's center
      */
     fun updateVertices(newCenter: LatLng) {
+        latitudeBoundaries.check(newCenter)
         vertices = relativeVertices.computeAbsoluteCoordinates(newCenter = newCenter)
     }
 
