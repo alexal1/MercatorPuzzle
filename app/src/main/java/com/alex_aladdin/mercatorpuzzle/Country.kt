@@ -138,22 +138,36 @@ class Country(private var vertices: ArrayList<ArrayList<LatLng>>, val id: String
         val centerLat: Double = (minLat + maxLat) / 2
 
         longitudes.sort()
-        val n = longitudes.size - 1
-        val distances: ArrayList<Double> = ArrayList()
-        (0..n-1).forEach { i ->
-            distances.add(i, longitudes[i+1] - longitudes[i])
-        }
-        distances.add(n, 360.0 - longitudes[n] + longitudes[0])
-        val maxDistance: Int = distances.indices.maxBy { distances[it] } ?: -1
 
-        // Center longitude is a half-sum of country's longitude boundaries
-        val centerLng: Double = (longitudes[maxDistance] + longitudes[(maxDistance + 1) % n]) / 2
-        if (this.contains(LatLng(centerLat, centerLng))) {
-            return LatLng(centerLat, centerLng)
+        val n = longitudes.size - 1
+        var maxDistance = 0.0
+        var lng1 = 0.0
+        var lng2 = 0.0
+        (0..n).forEach { i ->
+            val distance = if (i < n)
+                longitudes[i+1] - longitudes[i]
+            else
+                longitudes[0] + 360.0 - longitudes[n]
+
+            // If this is longest distance, save its boundaries
+            if (distance > maxDistance) {
+                maxDistance = distance
+                if (i < n) {
+                    lng1 = longitudes[i]
+                    lng2 = longitudes[i+1]
+                }
+                else {
+                    lng1 = longitudes[n]
+                    lng2 = longitudes[0]
+                }
+            }
         }
-        else {
-            return LatLng(centerLat, (centerLng + 180.0) % 360.0)
-        }
+        val centerLng = if (lng1 > lng2)
+            (lng1 + lng2) / 2
+        else
+            ((lng1 + lng2) / 2 + 360.0) % 360.0 - 180.0
+
+        return LatLng(centerLat, centerLng)
     }
 
     /**
