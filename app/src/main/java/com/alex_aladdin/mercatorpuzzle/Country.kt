@@ -3,13 +3,11 @@ package com.alex_aladdin.mercatorpuzzle
 import android.graphics.*
 import android.util.Log
 import com.alex_aladdin.utils.distanceTo
-import com.alex_aladdin.utils.position
+import com.alex_aladdin.utils.google_maps_utils.PolyUtil
 import com.mapbox.mapboxsdk.annotations.Polygon
 import com.mapbox.mapboxsdk.annotations.PolygonOptions
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapboxMap
-import com.mapbox.services.api.utils.turf.TurfJoins
-import com.mapbox.services.commons.models.Position
 
 /**
  * This class represents one draggable country.
@@ -174,16 +172,7 @@ class Country(private var vertices: ArrayList<ArrayList<LatLng>>, val id: String
      * Check if country contains given point or not.
      */
     fun contains(latLng: LatLng): Boolean {
-        for (polygon in vertices) {
-            val polygonPositions = ArrayList<Position>()
-            polygon.mapTo(polygonPositions, { it.position() })
-
-            if (TurfJoins.inside(latLng.position(), polygonPositions)) {
-                return true
-            }
-        }
-
-        return false
+        return vertices.any { polygon -> PolyUtil.containsLocation(latLng, polygon, false) }
     }
 
     /**
