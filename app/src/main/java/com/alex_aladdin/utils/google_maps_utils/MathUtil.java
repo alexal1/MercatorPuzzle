@@ -21,12 +21,12 @@ import static java.lang.Math.*;
 /**
  * Utility functions that are used by both PolyUtil and SphericalUtil.
  */
-class MathUtil {
+public class MathUtil {
     /**
      * The earth's radius, in meters.
      * Mean radius as defined by IUGG.
      */
-    static final double EARTH_RADIUS = 6371009;
+    public static final double EARTH_RADIUS = 6371009;
 
     /**
      * Restrict x to the range [low, high].
