@@ -1,7 +1,7 @@
 package com.alex_aladdin.mercatorpuzzle
 
-import com.alex_aladdin.utils.google_maps_utils.MathUtil
-import com.alex_aladdin.utils.google_maps_utils.SphericalUtil
+import com.alex_aladdin.google_maps_utils.MathUtil
+import com.alex_aladdin.google_maps_utils.SphericalUtil
 import com.mapbox.mapboxsdk.geometry.LatLng
 import java.lang.Math.*
 

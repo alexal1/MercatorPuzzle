@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.alex_aladdin.utils.google_maps_utils;
+package com.alex_aladdin.google_maps_utils;
 
 import static java.lang.Math.*;
 

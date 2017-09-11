@@ -78,7 +78,7 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
                 dragInProcess = false
                 stopDrawThread()
                 mapboxMap?.let {
-                    country?.drawOnMap(it)
+                    (context as MapActivity).drawCountry()
                 }
                 return true
             }

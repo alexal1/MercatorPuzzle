@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.alex_aladdin.utils.google_maps_utils;
+package com.alex_aladdin.google_maps_utils;
 
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
@@ -22,17 +22,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-import static com.alex_aladdin.utils.google_maps_utils.MathUtil.EARTH_RADIUS;
-import static com.alex_aladdin.utils.google_maps_utils.MathUtil.clamp;
-import static com.alex_aladdin.utils.google_maps_utils.MathUtil.hav;
-import static com.alex_aladdin.utils.google_maps_utils.MathUtil.havDistance;
-import static com.alex_aladdin.utils.google_maps_utils.MathUtil.havFromSin;
-import static com.alex_aladdin.utils.google_maps_utils.MathUtil.inverseMercator;
-import static com.alex_aladdin.utils.google_maps_utils.MathUtil.mercator;
-import static com.alex_aladdin.utils.google_maps_utils.MathUtil.sinFromHav;
-import static com.alex_aladdin.utils.google_maps_utils.MathUtil.sinSumFromHav;
-import static com.alex_aladdin.utils.google_maps_utils.MathUtil.wrap;
-import static com.alex_aladdin.utils.google_maps_utils.SphericalUtil.computeDistanceBetween;
+import static com.alex_aladdin.google_maps_utils.MathUtil.EARTH_RADIUS;
+import static com.alex_aladdin.google_maps_utils.MathUtil.clamp;
+import static com.alex_aladdin.google_maps_utils.MathUtil.hav;
+import static com.alex_aladdin.google_maps_utils.MathUtil.havDistance;
+import static com.alex_aladdin.google_maps_utils.MathUtil.havFromSin;
+import static com.alex_aladdin.google_maps_utils.MathUtil.inverseMercator;
+import static com.alex_aladdin.google_maps_utils.MathUtil.mercator;
+import static com.alex_aladdin.google_maps_utils.MathUtil.sinFromHav;
+import static com.alex_aladdin.google_maps_utils.MathUtil.sinSumFromHav;
+import static com.alex_aladdin.google_maps_utils.MathUtil.wrap;
+import static com.alex_aladdin.google_maps_utils.SphericalUtil.computeDistanceBetween;
 import static java.lang.Math.PI;
 import static java.lang.Math.cos;
 import static java.lang.Math.max;

@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.alex_aladdin.utils.google_maps_utils;
+package com.alex_aladdin.google_maps_utils;
 
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
 import java.util.List;
 
-import static com.alex_aladdin.utils.google_maps_utils.MathUtil.*;
+import static com.alex_aladdin.google_maps_utils.MathUtil.*;
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
 import static java.lang.Math.asin;
