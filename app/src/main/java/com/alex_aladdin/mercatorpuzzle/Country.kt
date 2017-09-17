@@ -10,6 +10,13 @@ import com.mapbox.mapboxsdk.geometry.LatLng
 class Country(var vertices: ArrayList<ArrayList<LatLng>>, val id: String, val name: String) {
 
     val targetCenter = getCenter()
+    var currentCenter = targetCenter
+        set(value) {
+            latitudeBoundaries.check(value)
+            updateVertices(value)
+            field = value
+        }
+
     private val relativeVertices = RelativeVertices(center = targetCenter, coordinates = vertices)
     private val latitudeBoundaries = LatitudeBoundaries(center = targetCenter, coordinates = vertices)
 
@@ -18,15 +25,14 @@ class Country(var vertices: ArrayList<ArrayList<LatLng>>, val id: String, val na
      *
      * @param newCenter coordinates of a new Country's center
      */
-    fun updateVertices(newCenter: LatLng) {
-        latitudeBoundaries.check(newCenter)
+    private fun updateVertices(newCenter: LatLng) {
         vertices = relativeVertices.computeAbsoluteCoordinates(newCenter = newCenter)
     }
 
     /**
      * Calculate country's center.
      */
-    fun getCenter(): LatLng {
+    private fun getCenter(): LatLng {
         // We find center latitude just by taking half-sum of min and max latitudes
         // To find center longitude we should firstly find boundary longitudes of the country
         val longitudes: ArrayList<Double> = ArrayList()

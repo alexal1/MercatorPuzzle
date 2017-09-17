@@ -11,7 +11,7 @@ import com.mapbox.mapboxsdk.maps.Projection
  */
 class DrawThread(val surfaceHolder: SurfaceHolder,
                  val projection: Projection,
-                 val country: Country) : Thread() {
+                 val country: Country) : Thread("DrawThread") {
 
     private val LOG_TAG = "MercatorDrawThread"
     var runFlag: Boolean = false    // DrawThread is running at the moment
@@ -34,7 +34,7 @@ class DrawThread(val surfaceHolder: SurfaceHolder,
                     // Draw country
                     touchPoint?.let {
                         val touchCoordinates: LatLng = projection.fromScreenLocation(it)
-                        country.updateVertices(newCenter = touchCoordinates)
+                        country.currentCenter = touchCoordinates
                         canvas?.drawCountry()
                         // Remove country's polygons from the map if they haven't been yet
                         MapActivity.removePolygons()

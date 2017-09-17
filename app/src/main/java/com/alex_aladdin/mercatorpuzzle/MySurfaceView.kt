@@ -27,6 +27,7 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
     var mapboxMap: MapboxMap? = null
     var country: Country? = null
     var drawThread: DrawThread? = null
+    var countryAnimator: CountryAnimator? = null
     var dragInProcess: Boolean = false
 
     init {
@@ -45,48 +46,61 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-        if (event?.action == MotionEvent.ACTION_DOWN) {
-            // Check out if touch is inside country or not
-            if (mapboxMap == null || country == null) {
-                return false
-            }
-            else {
-                val touchPoint: PointF = PointF(event.x, event.y)
-                val touchCoordinates: LatLng = mapboxMap!!.projection.fromScreenLocation(touchPoint)
-                val isInside = country!!.contains(touchCoordinates)
+        if (countryAnimator?.isInProgress ?: false) {
+            return true
+        }
 
-                // If touch is inside country, start dragging
-                if (isInside) {
-                    startDrawThread()
+        when(event?.action) {
+            MotionEvent.ACTION_DOWN -> {
+                // Check out if touch is inside country or not
+                if (mapboxMap == null || country == null) {
+                    return false
                 }
-                dragInProcess = isInside
-                Log.i(LOG_TAG, "Touch is inside country: $isInside")
+                else {
+                    val touchPoint: PointF = PointF(event.x, event.y)
+                    val touchCoordinates: LatLng = mapboxMap!!.projection.fromScreenLocation(touchPoint)
+                    val isInside = country!!.contains(touchCoordinates)
 
-                return isInside
-            }
-        }
-        else if (event?.action == MotionEvent.ACTION_MOVE) {
-            if (dragInProcess) {
-                drawThread?.touchPoint = PointF(event.x, event.y)
-                return true
-            }
-            else
-                return false
-        }
-        else if (event?.action == MotionEvent.ACTION_UP) {
-            if (dragInProcess) {
-                dragInProcess = false
-                stopDrawThread()
-                mapboxMap?.let {
-                    (context as MapActivity).drawCountry()
+                    // If touch is inside country, start dragging
+                    if (isInside) {
+                        startDrawThread()
+                    }
+                    dragInProcess = isInside
+                    Log.i(LOG_TAG, "Touch is inside country: $isInside")
+
+                    return isInside
                 }
-                return true
             }
-            else
-                return false
+
+            MotionEvent.ACTION_MOVE -> {
+                if (dragInProcess) {
+                    drawThread?.touchPoint = PointF(event.x, event.y)
+                    return true
+                }
+                else
+                    return false
+            }
+
+            MotionEvent.ACTION_UP -> {
+                if (dragInProcess) {
+                    dragInProcess = false
+
+                    drawThread?.let { countryAnimator = CountryAnimator(it) }
+                    countryAnimator?.animate {
+                        stopDrawThread()
+                        mapboxMap?.let {
+                            (context as MapActivity).drawCountry()
+                        }
+                    }
+
+                    return true
+                }
+                else
+                    return false
+            }
+
+            else -> return super.onTouchEvent(event)
         }
-        else
-            return super.onTouchEvent(event)
     }
 
     /**
