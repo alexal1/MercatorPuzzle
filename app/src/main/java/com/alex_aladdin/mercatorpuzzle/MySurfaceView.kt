@@ -52,6 +52,10 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
+        if (!isEnabled) {
+            return false
+        }
+
         if (countryAnimator?.isInProgress == true) {
             return true
         }

@@ -31,8 +31,8 @@ class MapActivity : AppCompatActivity() {
 
     }
 
-    var mapboxMap: MapboxMap? = null
-    var country: Country? = null
+    private var mapboxMap: MapboxMap? = null
+    private var country: Country? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,6 +58,11 @@ class MapActivity : AppCompatActivity() {
 
             mapboxMap.setOnCameraMoveStartedistener {
                 mySurfaceView.clearCanvas()
+                mySurfaceView.isEnabled = false
+            }
+
+            mapboxMap.setOnCameraIdleListener {
+                mySurfaceView.isEnabled = true
             }
 
             addCountry()
