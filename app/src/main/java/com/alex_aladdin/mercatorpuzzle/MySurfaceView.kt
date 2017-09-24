@@ -23,12 +23,18 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
 
     constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(context, attrs, defStyle)
 
-    private val LOG_TAG = "MercatorMySurfaceView"
+    companion object {
+
+        const val TAG = "MercatorMySurfaceView"
+
+    }
+
     var mapboxMap: MapboxMap? = null
     var country: Country? = null
-    var drawThread: DrawThread? = null
-    var countryAnimator: CountryAnimator? = null
-    var dragInProcess: Boolean = false
+
+    private var drawThread: DrawThread? = null
+    private var countryAnimator: CountryAnimator? = null
+    private var dragInProcess: Boolean = false
 
     init {
         // Get our SurfaceHolder object and tell him that we wanna receive callbacks
@@ -46,7 +52,7 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-        if (countryAnimator?.isInProgress ?: false) {
+        if (countryAnimator?.isInProgress == true) {
             return true
         }
 
@@ -57,7 +63,7 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
                     return false
                 }
                 else {
-                    val touchPoint: PointF = PointF(event.x, event.y)
+                    val touchPoint = PointF(event.x, event.y)
                     val touchCoordinates: LatLng = mapboxMap!!.projection.fromScreenLocation(touchPoint)
                     val isInside = country!!.contains(touchCoordinates)
 
@@ -66,37 +72,47 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
                         startDrawThread()
                     }
                     dragInProcess = isInside
-                    Log.i(LOG_TAG, "Touch is inside country: $isInside")
+                    Log.i(TAG, "Touch is inside country: $isInside")
 
                     return isInside
                 }
             }
 
             MotionEvent.ACTION_MOVE -> {
-                if (dragInProcess) {
+                return if (dragInProcess) {
                     drawThread?.touchPoint = PointF(event.x, event.y)
-                    return true
+                    true
                 }
-                else
-                    return false
+                else {
+                    false
+                }
             }
 
             MotionEvent.ACTION_UP -> {
                 if (dragInProcess) {
                     dragInProcess = false
 
-                    drawThread?.let { countryAnimator = CountryAnimator(it) }
-                    countryAnimator?.animate {
+                    // Operations to do either immediately or after animation finishes
+                    fun doFinally() {
                         stopDrawThread()
                         mapboxMap?.let {
                             (context as MapActivity).drawCountry()
                         }
                     }
 
+                    if (country?.isCloseToTarget() == true) {
+                        drawThread?.let { countryAnimator = CountryAnimator(it) }
+                        countryAnimator?.animate { doFinally() }
+                    }
+                    else {
+                        doFinally()
+                    }
+
                     return true
                 }
-                else
+                else {
                     return false
+                }
             }
 
             else -> return super.onTouchEvent(event)
@@ -118,7 +134,7 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
      * Stop background thread that performs drawing on this SurfaceView.
      */
     private fun stopDrawThread() {
-        var retry: Boolean = true
+        var retry = true
         drawThread?.apply {
             runFlag = false
             while (retry) {
@@ -127,7 +143,7 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
                     retry = false
                 }
                 catch (e: InterruptedException) {
-                    Log.e(LOG_TAG, e.toString())
+                    Log.e(TAG, e.toString())
                 }
             }
         }

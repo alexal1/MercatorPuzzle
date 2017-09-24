@@ -10,6 +10,12 @@ import android.graphics.PointF
  */
 class CountryAnimator(private val drawThread: DrawThread) {
 
+    companion object {
+
+        const val DURATION: Long = 300
+
+    }
+
     /**
      * Flag that shows if animation is in progress now.
      */
@@ -47,7 +53,7 @@ class CountryAnimator(private val drawThread: DrawThread) {
 
             })
 
-            animator.duration = 1000
+            animator.duration = DURATION
             animator.start()
             isInProgress = true
         }

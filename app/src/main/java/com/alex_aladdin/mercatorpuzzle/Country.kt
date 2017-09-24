@@ -17,6 +17,7 @@ class Country(var vertices: ArrayList<ArrayList<LatLng>>, val id: String, val na
             field = value
         }
 
+    private lateinit var size: Size // is initialized in getCenter()
     private val relativeVertices = RelativeVertices(center = targetCenter, coordinates = vertices)
     private val latitudeBoundaries = LatitudeBoundaries(center = targetCenter, coordinates = vertices)
 
@@ -36,6 +37,7 @@ class Country(var vertices: ArrayList<ArrayList<LatLng>>, val id: String, val na
         // We find center latitude just by taking half-sum of min and max latitudes
         // To find center longitude we should firstly find boundary longitudes of the country
         val longitudes: ArrayList<Double> = ArrayList()
+        size = Size()
 
         var minLat: Double = vertices[0][0].latitude
         var maxLat: Double = vertices[0][0].latitude
@@ -47,6 +49,7 @@ class Country(var vertices: ArrayList<ArrayList<LatLng>>, val id: String, val na
             }
         }
         val centerLat: Double = (minLat + maxLat) / 2
+        size.height = Math.abs(maxLat - minLat)
 
         longitudes.sort()
 
@@ -73,10 +76,15 @@ class Country(var vertices: ArrayList<ArrayList<LatLng>>, val id: String, val na
                 }
             }
         }
-        val centerLng = if (lng1 > lng2)
-            (lng1 + lng2) / 2
-        else
-            ((lng1 + lng2) / 2 + 360.0) % 360.0 - 180.0
+        val centerLng: Double
+        if (lng1 > lng2) {
+            centerLng = (lng1 + lng2) / 2
+            size.width = lng1 - lng2
+        }
+        else {
+            centerLng = ((lng1 + lng2) / 2 + 360.0) % 360.0 - 180.0
+            size.width = 360.0 - lng2 + lng1
+        }
 
         return LatLng(centerLat, centerLng)
     }
@@ -84,8 +92,17 @@ class Country(var vertices: ArrayList<ArrayList<LatLng>>, val id: String, val na
     /**
      * Check if country contains given point or not.
      */
-    fun contains(latLng: LatLng): Boolean {
-        return vertices.any { polygon -> PolyUtil.containsLocation(latLng, polygon, false) }
-    }
+    fun contains(latLng: LatLng): Boolean = vertices.any { polygon -> PolyUtil.containsLocation(latLng, polygon, false) }
+
+    /**
+     * Check if Country's currentCenter is close enough to the targetCenter.
+     */
+    fun isCloseToTarget(): Boolean = Math.abs(targetCenter.longitude - currentCenter.longitude) < size.width / 2
+            && Math.abs(targetCenter.latitude - currentCenter.latitude) < size.height / 2
+
+    /**
+     * Country's width and height measured in degrees of longitude and latitude respectively.
+     */
+    data class Size(var width: Double = 0.0, var height: Double = 0.0)
 
 }
