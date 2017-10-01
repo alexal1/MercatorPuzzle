@@ -17,22 +17,20 @@ class MapActivity : AppCompatActivity() {
 
         val TAG = "MercatorMapActivity"
 
-        private val polygonsOnMap: ArrayList<Polygon> = ArrayList()
+        private val polygonsOnMap = HashMap<Country, ArrayList<Polygon>>()
 
         /**
          * Remove country from the map.
          */
-        fun removePolygons() {
-            if (polygonsOnMap.isNotEmpty()) {
-                polygonsOnMap.forEach { it.remove() }
-                polygonsOnMap.clear()
-            }
+        fun removePolygons(country: Country) {
+            polygonsOnMap[country]?.forEach { polygon -> polygon.remove() }
+            polygonsOnMap[country]?.clear()
+            polygonsOnMap.remove(country)
         }
 
     }
 
     private var mapboxMap: MapboxMap? = null
-    private var country: Country? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,7 +63,7 @@ class MapActivity : AppCompatActivity() {
                 mySurfaceView.isEnabled = true
             }
 
-            addCountry()
+            addCountries()
         }
 
         mySurfaceView.setZOrderMediaOverlay(true)               // Show MySurfaceView above MapView
@@ -75,21 +73,18 @@ class MapActivity : AppCompatActivity() {
     /**
      * Draw country on the map.
      */
-    fun drawCountry() {
-        if (country == null) {
-            Log.e(TAG, "Cannot draw country, country is null!")
-            return
-        }
-
+    fun drawCountry(country: Country) {
         if (mapboxMap == null) {
             Log.e(TAG, "Cannot draw country, mapboxMap is null!")
             return
         }
 
-        for (polygon in country!!.vertices) {
+        polygonsOnMap[country] = ArrayList()
+
+        for (polygon in country.vertices) {
             // Condition from GeoJSON specification
             if (polygon.size < 4) {
-                Log.e(TAG, "Incorrect polygon in ${country!!.name}!")
+                Log.e(TAG, "Incorrect polygon in ${country.name}!")
                 continue
             }
 
@@ -97,19 +92,18 @@ class MapActivity : AppCompatActivity() {
                     .fillColor(Color.parseColor("#ff0000"))
                     .addAll(polygon)
             val newPolygon = mapboxMap!!.addPolygon(polygonOptions)
-            polygonsOnMap.add(newPolygon)
+            polygonsOnMap[country]?.add(newPolygon)
         }
     }
 
     /**
-     * Add country to the map.
+     * Add countries to the map.
      */
-    private fun addCountry() {
+    private fun addCountries() {
         GeoJsonParser(completion = { countries ->
-            country = countries.first()
-            drawCountry()
-            mySurfaceView.country = country
-        }).execute("RUS")
+            MercatorApp.loadedCountries.addAll(countries)
+            MercatorApp.loadedCountries.forEach { drawCountry(it) }
+        }).execute("RUS", "USA", "CHN", "LKA", "JPN")
     }
 
     public override fun onStart() {

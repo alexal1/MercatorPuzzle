@@ -100,6 +100,10 @@ class Country(var vertices: ArrayList<ArrayList<LatLng>>, val id: String, val na
     fun isCloseToTarget(): Boolean = Math.abs(targetCenter.longitude - currentCenter.longitude) < size.width / 2
             && Math.abs(targetCenter.latitude - currentCenter.latitude) < size.height / 2
 
+    override fun equals(other: Any?): Boolean = (other is Country) && (other.id == this@Country.id)
+
+    override fun hashCode(): Int = this@Country.id.hashCode()
+
     /**
      * Country's width and height measured in degrees of longitude and latitude respectively.
      */

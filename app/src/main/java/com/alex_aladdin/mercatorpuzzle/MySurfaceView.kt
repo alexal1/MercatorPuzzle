@@ -30,11 +30,11 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
     }
 
     var mapboxMap: MapboxMap? = null
-    var country: Country? = null
 
     private var drawThread: DrawThread? = null
     private var countryAnimator: CountryAnimator? = null
     private var dragInProcess: Boolean = false
+    private var currentCountry: Country? = null
 
     init {
         // Get our SurfaceHolder object and tell him that we wanna receive callbacks
@@ -62,24 +62,30 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
 
         when(event?.action) {
             MotionEvent.ACTION_DOWN -> {
-                // Check out if touch is inside country or not
-                if (mapboxMap == null || country == null) {
-                    return false
-                }
-                else {
+                // Check out if touch is inside some country or not
+                for (country in MercatorApp.loadedCountries) {
                     val touchPoint = PointF(event.x, event.y)
-                    val touchCoordinates: LatLng = mapboxMap!!.projection.fromScreenLocation(touchPoint)
-                    val isInside = country!!.contains(touchCoordinates)
+                    val touchCoordinates: LatLng = mapboxMap?.projection?.fromScreenLocation(touchPoint) ?: return false
+                    val isInside = country.contains(touchCoordinates)
 
                     // If touch is inside country, start dragging
                     if (isInside) {
-                        startDrawThread()
-                    }
-                    dragInProcess = isInside
-                    Log.i(TAG, "Touch is inside country: $isInside")
+                        startDrawThread(country)
+                        dragInProcess = true
+                        currentCountry = country
+                        Log.i(TAG, "Touch is inside ${country.name}")
 
-                    return isInside
+                        // Move this country to the first position in the array
+                        if (MercatorApp.loadedCountries[0] != country) {
+                            MercatorApp.loadedCountries.remove(country)
+                            MercatorApp.loadedCountries.add(0, country)
+                        }
+
+                        return true
+                    }
                 }
+
+                return false
             }
 
             MotionEvent.ACTION_MOVE -> {
@@ -99,12 +105,12 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
                     // Operations to do either immediately or after animation finishes
                     fun doFinally() {
                         stopDrawThread()
-                        mapboxMap?.let {
-                            (context as MapActivity).drawCountry()
+                        currentCountry?.let {
+                            (context as MapActivity).drawCountry(it)
                         }
                     }
 
-                    if (country?.isCloseToTarget() == true) {
+                    if (currentCountry?.isCloseToTarget() == true) {
                         drawThread?.let { countryAnimator = CountryAnimator(it) }
                         countryAnimator?.animate { doFinally() }
                     }
@@ -125,13 +131,15 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
 
     /**
      * Start background thread that performs drawing on this SurfaceView.
+     *
+     * @param country Country object to draw
      */
-    private fun startDrawThread() {
-        if (mapboxMap != null && country != null) {
-            drawThread = DrawThread(holder, mapboxMap!!.projection, country!!)
-            drawThread!!.runFlag = true
-            drawThread!!.start()
-        }
+    private fun startDrawThread(country: Country) {
+        mapboxMap ?: return
+
+        drawThread = DrawThread(holder, mapboxMap!!.projection, country)
+        drawThread!!.runFlag = true
+        drawThread!!.start()
     }
 
     /**

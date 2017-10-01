@@ -17,6 +17,8 @@ class MercatorApp : Application() {
         lateinit var applicationContext: Context private set
         lateinit var screen: PointF private set
 
+        val loadedCountries = ArrayList<Country>()
+
     }
 
     override fun onCreate() {

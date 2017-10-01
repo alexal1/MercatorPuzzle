@@ -1,6 +1,8 @@
 package com.alex_aladdin.mercatorpuzzle
 
 import android.graphics.*
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.SurfaceHolder
 import com.mapbox.mapboxsdk.geometry.LatLng
@@ -9,7 +11,7 @@ import com.mapbox.mapboxsdk.maps.Projection
 /**
  * Thread for drawing on MySurfaceView.
  */
-class DrawThread(val surfaceHolder: SurfaceHolder,
+class DrawThread(private val surfaceHolder: SurfaceHolder,
                  val projection: Projection,
                  val country: Country) : Thread("DrawThread") {
 
@@ -19,6 +21,7 @@ class DrawThread(val surfaceHolder: SurfaceHolder,
 
     override fun run() {
         var canvas: Canvas?
+        var arePolygonsRemoved = false
 
         Log.i(LOG_TAG, "Center: ${country.targetCenter}")
 
@@ -37,7 +40,12 @@ class DrawThread(val surfaceHolder: SurfaceHolder,
                         country.currentCenter = touchCoordinates
                         canvas?.drawCountry()
                         // Remove country's polygons from the map if they haven't been yet
-                        MapActivity.removePolygons()
+                        if (!arePolygonsRemoved) {
+                            arePolygonsRemoved = true
+                            Handler(Looper.getMainLooper()).post {
+                                MapActivity.removePolygons(country)
+                            }
+                        }
                     }
                 }
             }
@@ -73,7 +81,7 @@ class DrawThread(val surfaceHolder: SurfaceHolder,
             // Half of screen width
             val halfScreen = MercatorApp.screen.x / 2
             // Go through all points
-            (1..polygon.size-1).forEach { i ->
+            (1 until polygon.size).forEach { i ->
                 val point: PointF = projection.toScreenLocation(polygon[i])
 
                 if (point.distanceTo(prevPoint) > halfScreen) {
