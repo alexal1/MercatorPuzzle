@@ -5,6 +5,7 @@ import android.graphics.PixelFormat
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import android.view.MotionEvent
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.annotations.Polygon
 import com.mapbox.mapboxsdk.annotations.PolygonOptions
@@ -35,14 +36,21 @@ class MapActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Get Mapbox instance
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token))
 
         setContentView(R.layout.activity_map)
 
-        // Create a mapView
         mapView.onCreate(savedInstanceState)
-        // Add a MapboxMap
+        initMap()
+
+        mySurfaceView.setZOrderMediaOverlay(true)               // Show MySurfaceView above MapView
+        mySurfaceView.holder.setFormat(PixelFormat.TRANSPARENT) // Make MySurfaceView transparent
+    }
+
+    /**
+     * All initial operations with the map.
+     */
+    private fun initMap() {
         mapView.getMapAsync { mapboxMap ->
             // Save object
             this.mapboxMap = mapboxMap
@@ -54,20 +62,22 @@ class MapActivity : AppCompatActivity() {
             mapboxMap.uiSettings.isAttributionEnabled = false
             mapboxMap.uiSettings.isLogoEnabled = false
 
-            mapboxMap.setOnCameraMoveStartedistener {
-                mySurfaceView.clearCanvas()
-                mySurfaceView.isEnabled = false
-            }
-
-            mapboxMap.setOnCameraIdleListener {
-                mySurfaceView.isEnabled = true
-            }
-
             addCountries()
         }
 
-        mySurfaceView.setZOrderMediaOverlay(true)               // Show MySurfaceView above MapView
-        mySurfaceView.holder.setFormat(PixelFormat.TRANSPARENT) // Make MySurfaceView transparent
+        mapView.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    mySurfaceView.clearCanvas()
+                    mySurfaceView.isEnabled = false
+                }
+
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    mySurfaceView.isEnabled = true
+                }
+            }
+            return@setOnTouchListener false
+        }
     }
 
     /**

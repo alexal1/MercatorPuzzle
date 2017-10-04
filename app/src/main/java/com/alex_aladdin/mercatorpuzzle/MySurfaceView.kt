@@ -98,7 +98,7 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
                 }
             }
 
-            MotionEvent.ACTION_UP -> {
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                 if (dragInProcess) {
                     dragInProcess = false
 
