@@ -62,7 +62,12 @@ class MapActivity : AppCompatActivity() {
             mapboxMap.uiSettings.isAttributionEnabled = false
             mapboxMap.uiSettings.isLogoEnabled = false
 
-            addCountries()
+            if (MercatorApp.loadedCountries.isNotEmpty()) {
+                onCountriesLoaded()
+            }
+            else {
+                loadCountries()
+            }
         }
 
         mapView.setOnTouchListener { _, event ->
@@ -107,13 +112,20 @@ class MapActivity : AppCompatActivity() {
     }
 
     /**
-     * Add countries to the map.
+     * Load countries from GeoJSON.
      */
-    private fun addCountries() {
+    private fun loadCountries() {
         GeoJsonParser(completion = { countries ->
             MercatorApp.loadedCountries.addAll(countries)
-            MercatorApp.loadedCountries.forEach { drawCountry(it) }
+            onCountriesLoaded()
         }).execute("RUS", "USA", "CHN", "LKA", "JPN")
+    }
+
+    /**
+     * Function that's invoked when countries are loaded.
+     */
+    private fun onCountriesLoaded() {
+        MercatorApp.loadedCountries.forEach { drawCountry(it) }
     }
 
     public override fun onStart() {
