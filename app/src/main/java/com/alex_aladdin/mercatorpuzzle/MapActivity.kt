@@ -9,6 +9,7 @@ import android.view.MotionEvent
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.annotations.Polygon
 import com.mapbox.mapboxsdk.annotations.PolygonOptions
+import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import kotlinx.android.synthetic.main.activity_map.*
 
@@ -117,6 +118,7 @@ class MapActivity : AppCompatActivity() {
     private fun loadCountries() {
         GeoJsonParser(completion = { countries ->
             MercatorApp.loadedCountries.addAll(countries)
+            CountriesDisposition().apply(MercatorApp.loadedCountries)
             onCountriesLoaded()
         }).execute("RUS", "USA", "CHN", "LKA", "JPN")
     }
@@ -161,6 +163,18 @@ class MapActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         mapView.onDestroy()
+    }
+
+    /**
+     * Representation of a certain area on the map.
+     */
+    data class ViewPort(val northeast: LatLng, val southwest: LatLng) {
+
+        constructor() : this(
+                northeast = LatLng(LatitudeBoundaries.MAX_LATITUDE, 180.0),
+                southwest = LatLng(-LatitudeBoundaries.MAX_LATITUDE, -180.0)
+        )
+
     }
 
 }
