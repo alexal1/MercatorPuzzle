@@ -1,52 +1,30 @@
-package com.alex_aladdin.mercatorpuzzle
+package com.alex_aladdin.mercatorpuzzle.draw_threads
 
 import android.graphics.*
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.SurfaceHolder
-import com.mapbox.mapboxsdk.geometry.LatLng
-import com.mapbox.mapboxsdk.maps.Projection
+import com.alex_aladdin.mercatorpuzzle.MercatorApp
 
 /**
- * Thread for drawing on MySurfaceView.
+ * DrawThread is used to draw Countries on a SurfaceView using a background thread.
  */
-class DrawThread(private val surfaceHolder: SurfaceHolder,
-                 val projection: Projection,
-                 val country: Country) : Thread("DrawThread") {
+abstract class DrawThread(threadName: String, private val surfaceHolder: SurfaceHolder) : Thread(threadName) {
 
-    private val LOG_TAG = "MercatorDrawThread"
-    var runFlag: Boolean = false    // DrawThread is running at the moment
-    var touchPoint: PointF? = null  // Point on the screen where user touches it
+    private val tag = "Mercator$threadName"
+    private var runFlag: Boolean = false
+
+    abstract fun Canvas.drawFrame()
 
     override fun run() {
         var canvas: Canvas?
-        var arePolygonsRemoved = false
 
-        Log.i(LOG_TAG, "Center: ${country.targetCenter}")
-
-        // Start drawing
         while (runFlag) {
             canvas = null
             try {
                 canvas = surfaceHolder.lockCanvas(null)
                 synchronized (surfaceHolder) {
-                    // Clear canvas
                     canvas?.drawColor(0, PorterDuff.Mode.CLEAR)
-
-                    // Draw country
-                    touchPoint?.let {
-                        val touchCoordinates: LatLng = projection.fromScreenLocation(it)
-                        country.currentCenter = touchCoordinates
-                        canvas?.drawCountry()
-                        // Remove country's polygons from the map if they haven't been yet
-                        if (!arePolygonsRemoved) {
-                            arePolygonsRemoved = true
-                            Handler(Looper.getMainLooper()).post {
-                                MapActivity.removePolygons(country)
-                            }
-                        }
-                    }
+                    canvas?.drawFrame()
                 }
             }
             finally {
@@ -58,22 +36,23 @@ class DrawThread(private val surfaceHolder: SurfaceHolder,
     }
 
     /**
-     * Draw country on given Canvas.
+     * Draw Country on the given Canvas as a list of polygons. Each polygon can be represented
+     * by points of any type, which can be translated to PointF by given projection function.
      */
-    private fun Canvas.drawCountry() {
+    protected fun <T> Canvas.drawCountry(country: List<List<T>>, projection: (T) -> PointF?) {
         val paint = Paint()
         paint.color = Color.RED
         paint.isAntiAlias = true
         paint.style = Paint.Style.FILL_AND_STROKE
 
         // Draw one polygon on canvas
-        fun drawPolygon(polygon: ArrayList<LatLng>) {
+        fun drawPolygon(polygon: List<T>): Boolean {
             val path = Path()
-            val pointStart: PointF = projection.toScreenLocation(polygon[0])
+            val pointStart: PointF = projection(polygon[0]) ?: return@drawPolygon false
             path.moveTo(pointStart.x, pointStart.y)
 
             // Part of polygon that got out to the opposite part of the screen
-            val cutPolygon = ArrayList<LatLng>()
+            val cutPolygon = ArrayList<T>()
             // This flag shows if we if we are going through cutPolygon's points or not
             var startCutPolygon = false
             // Previous point
@@ -82,7 +61,7 @@ class DrawThread(private val surfaceHolder: SurfaceHolder,
             val halfScreen = MercatorApp.screen.x / 2
             // Go through all points
             (1 until polygon.size).forEach { i ->
-                val point: PointF = projection.toScreenLocation(polygon[i])
+                val point: PointF = projection(polygon[i]) ?: return@drawPolygon false
 
                 if (point.distanceTo(prevPoint) > halfScreen) {
                     startCutPolygon = !startCutPolygon
@@ -102,19 +81,23 @@ class DrawThread(private val surfaceHolder: SurfaceHolder,
             this@drawCountry.drawPath(path, paint)
 
             // Recursive call to draw cutPolygon
-            if (cutPolygon.isNotEmpty()) {
+            return if (cutPolygon.isNotEmpty()) {
                 drawPolygon(cutPolygon)
+            }
+            else {
+                true
             }
         }
 
-        for (polygon in country.vertices) {
+        for (polygon in country) {
             // Condition from GeoJSON specification
             if (polygon.size < 4) {
-                Log.e(LOG_TAG, "Incorrect polygon in ${country.name}!")
+                Log.e(tag, "Incorrect polygon!")
                 continue
             }
 
-            drawPolygon(polygon)
+            val isPolygonDrawn = drawPolygon(polygon)
+            if (!isPolygonDrawn) break
         }
     }
 
@@ -124,6 +107,31 @@ class DrawThread(private val surfaceHolder: SurfaceHolder,
     private fun PointF.distanceTo(point: PointF): Float {
         return Math.sqrt(Math.pow(point.x.toDouble() - this.x.toDouble(), 2.0)
                 + Math.pow(point.y.toDouble() - this.y.toDouble(), 2.0)).toFloat()
+    }
+
+    /**
+     * Starts this DrawThread.
+     */
+    fun startDrawing() {
+        runFlag = true
+        this@DrawThread.start()
+    }
+
+    /**
+     * Stops this DrawThread.
+     */
+    fun stopDrawing() {
+        var retry = true
+        runFlag = false
+        while (retry) {
+            try {
+                join()
+                retry = false
+            }
+            catch (e: InterruptedException) {
+                Log.e(tag, e.toString())
+            }
+        }
     }
 
 }

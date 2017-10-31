@@ -1,14 +1,12 @@
-package com.alex_aladdin.mercatorpuzzle
+package com.alex_aladdin.mercatorpuzzle.animators
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.graphics.PointF
+import com.alex_aladdin.mercatorpuzzle.draw_threads.MoveDrawThread
 
-/**
- * Animator that moves Country to its target location.
- */
-class CountryAnimator(private val drawThread: DrawThread) {
+class MoveCountriesAnimator(moveDrawThread: MoveDrawThread) : CountriesAnimator(moveDrawThread) {
 
     companion object {
 
@@ -16,21 +14,12 @@ class CountryAnimator(private val drawThread: DrawThread) {
 
     }
 
-    /**
-     * Flag that shows if animation is in progress now.
-     */
-    var isInProgress = false
-        private set
+    private val animator = ValueAnimator.ofFloat(0f, 1f)
 
-    /**
-     * Move Country that's held by DrawThread to its target location.
-     */
-    fun animate(onFinish: (() -> Unit)? = null) {
-        drawThread.apply {
+    override fun animate(onFinish: (() -> Unit)?) {
+        (drawThread as MoveDrawThread).apply {
             val startPoint: PointF = projection.toScreenLocation(country.currentCenter)
             val endPoint: PointF = projection.toScreenLocation(country.targetCenter)
-
-            val animator = ValueAnimator.ofFloat(0f, 1f)
 
             animator.addUpdateListener { animation: ValueAnimator? ->
                 val value: Float = animation?.animatedValue as? Float ?: 0f
@@ -45,7 +34,6 @@ class CountryAnimator(private val drawThread: DrawThread) {
 
                 override fun onAnimationEnd(animation: Animator?) {
                     super.onAnimationEnd(animation)
-
                     country.currentCenter = country.targetCenter
                     isInProgress = false
                     onFinish?.invoke()
@@ -57,6 +45,10 @@ class CountryAnimator(private val drawThread: DrawThread) {
             animator.start()
             isInProgress = true
         }
+    }
+
+    override fun cancel() {
+        animator.cancel()
     }
 
 }

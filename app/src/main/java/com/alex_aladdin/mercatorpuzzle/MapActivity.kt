@@ -127,7 +127,7 @@ class MapActivity : AppCompatActivity() {
      * Function that's invoked when countries are loaded.
      */
     private fun onCountriesLoaded() {
-        MercatorApp.loadedCountries.forEach { drawCountry(it) }
+        mySurfaceView.showCountries(MercatorApp.loadedCountries)
     }
 
     public override fun onStart() {

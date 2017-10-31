@@ -9,6 +9,12 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.view.SurfaceView
+import com.alex_aladdin.mercatorpuzzle.animators.CountriesAnimator
+import com.alex_aladdin.mercatorpuzzle.animators.MoveCountriesAnimator
+import com.alex_aladdin.mercatorpuzzle.animators.ScaleCountriesAnimator
+import com.alex_aladdin.mercatorpuzzle.draw_threads.DrawThread
+import com.alex_aladdin.mercatorpuzzle.draw_threads.MoveDrawThread
+import com.alex_aladdin.mercatorpuzzle.draw_threads.ScaleDrawThread
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapboxMap
 
@@ -32,7 +38,7 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
     var mapboxMap: MapboxMap? = null
 
     private var drawThread: DrawThread? = null
-    private var countryAnimator: CountryAnimator? = null
+    private var countriesAnimator: CountriesAnimator? = null
     private var dragInProcess: Boolean = false
     private var currentCountry: Country? = null
 
@@ -48,7 +54,8 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder?) {
-        stopDrawThread()
+        drawThread?.stopDrawing()
+        drawThread = null
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
@@ -56,9 +63,7 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
             return false
         }
 
-        if (countryAnimator?.isInProgress == true) {
-            return true
-        }
+        countriesAnimator?.cancel()
 
         when(event?.action) {
             MotionEvent.ACTION_DOWN -> {
@@ -70,7 +75,13 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
 
                     // If touch is inside country, start dragging
                     if (isInside) {
-                        startDrawThread(country)
+                        drawThread?.stopDrawing()
+                        drawThread = MoveDrawThread(
+                                surfaceHolder = holder,
+                                projection = mapboxMap!!.projection,
+                                country = country
+                        )
+                        drawThread!!.startDrawing()
                         dragInProcess = true
                         currentCountry = country
                         Log.i(TAG, "Touch is inside ${country.name}")
@@ -90,7 +101,7 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
 
             MotionEvent.ACTION_MOVE -> {
                 return if (dragInProcess) {
-                    drawThread?.touchPoint = PointF(event.x, event.y)
+                    (drawThread as? MoveDrawThread)?.touchPoint = PointF(event.x, event.y)
                     true
                 }
                 else {
@@ -104,15 +115,16 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
 
                     // Operations to do either immediately or after animation finishes
                     fun doFinally() {
-                        stopDrawThread()
+                        drawThread?.stopDrawing()
+                        drawThread = null
                         currentCountry?.let {
                             (context as MapActivity).drawCountry(it)
                         }
                     }
 
                     if (currentCountry?.isCloseToTarget() == true) {
-                        drawThread?.let { countryAnimator = CountryAnimator(it) }
-                        countryAnimator?.animate { doFinally() }
+                        (drawThread as? MoveDrawThread)?.let { countriesAnimator = MoveCountriesAnimator(it) }
+                        countriesAnimator?.animate { doFinally() }
                     }
                     else {
                         doFinally()
@@ -129,34 +141,26 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
         }
     }
 
-    /**
-     * Start background thread that performs drawing on this SurfaceView.
-     *
-     * @param country Country object to draw
-     */
-    private fun startDrawThread(country: Country) {
-        mapboxMap ?: return
+    fun showCountries(countries: List<Country>) {
+        if (mapboxMap == null) {
+            Log.e(TAG, "Cannot show countries, mapboxMap is null!")
+            return
+        }
 
-        drawThread = DrawThread(holder, mapboxMap!!.projection, country)
-        drawThread!!.runFlag = true
-        drawThread!!.start()
-    }
+        drawThread?.stopDrawing()
+        drawThread = ScaleDrawThread.obtain(
+                surfaceHolder = holder,
+                projection = mapboxMap!!.projection,
+                countries = countries
+        )
+        drawThread!!.startDrawing()
 
-    /**
-     * Stop background thread that performs drawing on this SurfaceView.
-     */
-    private fun stopDrawThread() {
-        var retry = true
-        drawThread?.apply {
-            runFlag = false
-            while (retry) {
-                try {
-                    join()
-                    retry = false
-                }
-                catch (e: InterruptedException) {
-                    Log.e(TAG, e.toString())
-                }
+        countriesAnimator = ScaleCountriesAnimator(drawThread as ScaleDrawThread)
+        countriesAnimator!!.animate {
+            drawThread?.stopDrawing()
+            drawThread = null
+            countries.forEach {
+                (context as MapActivity).drawCountry(it)
             }
         }
     }
