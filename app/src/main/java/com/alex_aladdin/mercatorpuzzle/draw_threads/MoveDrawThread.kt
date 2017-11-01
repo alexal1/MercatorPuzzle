@@ -5,7 +5,7 @@ import android.graphics.PointF
 import android.os.Handler
 import android.os.Looper
 import android.view.SurfaceHolder
-import com.alex_aladdin.mercatorpuzzle.Country
+import com.alex_aladdin.mercatorpuzzle.country.Country
 import com.alex_aladdin.mercatorpuzzle.MapActivity
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.Projection

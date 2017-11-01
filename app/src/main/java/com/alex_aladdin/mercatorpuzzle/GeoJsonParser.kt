@@ -2,6 +2,7 @@ package com.alex_aladdin.mercatorpuzzle
 
 import android.os.AsyncTask
 import android.util.Log
+import com.alex_aladdin.mercatorpuzzle.country.Country
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.mapbox.mapboxsdk.geometry.LatLng

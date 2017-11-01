@@ -12,6 +12,7 @@ import android.view.SurfaceView
 import com.alex_aladdin.mercatorpuzzle.animators.CountriesAnimator
 import com.alex_aladdin.mercatorpuzzle.animators.MoveCountriesAnimator
 import com.alex_aladdin.mercatorpuzzle.animators.ScaleCountriesAnimator
+import com.alex_aladdin.mercatorpuzzle.country.Country
 import com.alex_aladdin.mercatorpuzzle.draw_threads.DrawThread
 import com.alex_aladdin.mercatorpuzzle.draw_threads.MoveDrawThread
 import com.alex_aladdin.mercatorpuzzle.draw_threads.ScaleDrawThread

@@ -6,6 +6,9 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.MotionEvent
+import com.alex_aladdin.mercatorpuzzle.country.CountriesDisposition
+import com.alex_aladdin.mercatorpuzzle.country.Country
+import com.alex_aladdin.mercatorpuzzle.country.LatitudeBoundaries
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.annotations.Polygon
 import com.mapbox.mapboxsdk.annotations.PolygonOptions

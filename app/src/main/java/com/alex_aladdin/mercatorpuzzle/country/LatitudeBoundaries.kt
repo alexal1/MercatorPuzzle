@@ -1,4 +1,4 @@
-package com.alex_aladdin.mercatorpuzzle
+package com.alex_aladdin.mercatorpuzzle.country
 
 import com.alex_aladdin.google_maps_utils.MathUtil
 import com.alex_aladdin.google_maps_utils.SphericalUtil
@@ -99,14 +99,12 @@ class LatitudeBoundaries(center: LatLng, coordinates: ArrayList<ArrayList<LatLng
     /**
      * Convert degrees to radians.
      */
-    private fun Double.toRadians(): Double {
-        return this * PI / 180.0
-    }
+    private fun Double.toRadians(): Double = this * PI / 180.0
 
     /**
      * Vector in 3-dimensional Cartesian coordinate system.
      */
-    class CartesianVector(val x: Double, val y: Double, val z: Double) {
+    data class CartesianVector(val x: Double, val y: Double, val z: Double) {
 
         /**
          * Return normalized vector.
@@ -114,10 +112,6 @@ class LatitudeBoundaries(center: LatLng, coordinates: ArrayList<ArrayList<LatLng
         fun normalize(): CartesianVector {
             val denominator: Double = sqrt(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0))
             return CartesianVector(x / denominator, y / denominator, z / denominator)
-        }
-
-        override fun toString(): String {
-            return "x = $x, y = $y, z = $z"
         }
 
     }

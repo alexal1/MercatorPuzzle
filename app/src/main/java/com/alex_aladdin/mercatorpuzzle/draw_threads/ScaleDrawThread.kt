@@ -3,7 +3,7 @@ package com.alex_aladdin.mercatorpuzzle.draw_threads
 import android.graphics.Canvas
 import android.graphics.PointF
 import android.view.SurfaceHolder
-import com.alex_aladdin.mercatorpuzzle.Country
+import com.alex_aladdin.mercatorpuzzle.country.Country
 import com.mapbox.mapboxsdk.maps.Projection
 
 /**

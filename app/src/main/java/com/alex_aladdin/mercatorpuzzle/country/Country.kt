@@ -1,4 +1,4 @@
-package com.alex_aladdin.mercatorpuzzle
+package com.alex_aladdin.mercatorpuzzle.country
 
 import com.alex_aladdin.google_maps_utils.PolyUtil
 import com.mapbox.mapboxsdk.geometry.LatLng

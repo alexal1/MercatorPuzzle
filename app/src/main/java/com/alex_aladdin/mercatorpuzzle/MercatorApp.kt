@@ -6,6 +6,7 @@ import android.content.res.Configuration
 import android.graphics.PointF
 import android.util.DisplayMetrics
 import android.view.WindowManager
+import com.alex_aladdin.mercatorpuzzle.country.Country
 
 /**
  * Extending Application class.

@@ -1,5 +1,6 @@
-package com.alex_aladdin.mercatorpuzzle
+package com.alex_aladdin.mercatorpuzzle.country
 
+import com.alex_aladdin.mercatorpuzzle.MapActivity
 import com.mapbox.mapboxsdk.geometry.LatLng
 import java.util.*
 
