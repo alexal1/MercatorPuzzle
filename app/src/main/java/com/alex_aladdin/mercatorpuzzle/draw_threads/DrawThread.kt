@@ -39,9 +39,9 @@ abstract class DrawThread(threadName: String, private val surfaceHolder: Surface
      * Draw Country on the given Canvas as a list of polygons. Each polygon can be represented
      * by points of any type, which can be translated to PointF by given projection function.
      */
-    protected fun <T> Canvas.drawCountry(country: List<List<T>>, projection: (T) -> PointF?) {
+    protected fun <T> Canvas.drawCountry(country: List<List<T>>, projection: (T) -> PointF?, color: Int) {
         val paint = Paint()
-        paint.color = Color.RED
+        paint.color = color
         paint.isAntiAlias = true
         paint.style = Paint.Style.FILL_AND_STROKE
 

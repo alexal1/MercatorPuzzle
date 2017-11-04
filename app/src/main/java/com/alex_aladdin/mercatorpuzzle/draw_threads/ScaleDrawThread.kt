@@ -12,6 +12,7 @@ import com.mapbox.mapboxsdk.maps.Projection
 class ScaleDrawThread private constructor(
         surfaceHolder: SurfaceHolder,
         private val points: Map<Country, List<List<PointF>>>,
+        private val colors: Map<Country, Int>,
         val centers: Map<Country, PointF>,
         val scales: HashMap<Country, (PointF) -> PointF?>) : DrawThread("ScaleDrawThread", surfaceHolder) {
 
@@ -19,6 +20,7 @@ class ScaleDrawThread private constructor(
 
         fun obtain(surfaceHolder: SurfaceHolder, projection: Projection, countries: List<Country>): ScaleDrawThread {
             val points = HashMap<Country, List<List<PointF>>>(countries.size)
+            val colors = HashMap<Country, Int>()
             val centers = HashMap<Country, PointF>()
             val scales = HashMap<Country, (PointF) -> PointF?>()
 
@@ -33,12 +35,14 @@ class ScaleDrawThread private constructor(
                 }
                 points[country] = countryPoints
 
+                colors[country] = country.color
+
                 centers[country] = projection.toScreenLocation(country.currentCenter)
 
                 scales[country] = { null }
             }
 
-            return ScaleDrawThread(surfaceHolder, points, centers, scales)
+            return ScaleDrawThread(surfaceHolder, points, colors, centers, scales)
         }
 
     }
@@ -46,9 +50,11 @@ class ScaleDrawThread private constructor(
     override fun Canvas.drawFrame() {
         for ((country, countryPoints) in points) {
             val countryScale = scales[country]!!
+            val countryColor = colors[country]!!
             this.drawCountry(
                     country = countryPoints,
-                    projection = countryScale
+                    projection = countryScale,
+                    color = countryColor
             )
         }
     }

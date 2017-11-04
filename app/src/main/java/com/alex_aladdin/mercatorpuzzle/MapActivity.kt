@@ -1,6 +1,5 @@
 package com.alex_aladdin.mercatorpuzzle
 
-import android.graphics.Color
 import android.graphics.PixelFormat
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -108,7 +107,7 @@ class MapActivity : AppCompatActivity() {
             }
 
             val polygonOptions = PolygonOptions()
-                    .fillColor(Color.parseColor("#ff0000"))
+                    .fillColor(country.color)
                     .addAll(polygon)
             val newPolygon = mapboxMap!!.addPolygon(polygonOptions)
             polygonsOnMap[country]?.add(newPolygon)
@@ -130,7 +129,12 @@ class MapActivity : AppCompatActivity() {
      * Function that's invoked when countries are loaded.
      */
     private fun onCountriesLoaded() {
-        mySurfaceView.showCountries(MercatorApp.loadedCountries)
+        MercatorApp.shownCountries.clear()
+        for (country in MercatorApp.loadedCountries) {
+            country.color = MercatorApp.obtainColor()
+            MercatorApp.shownCountries.add(country)
+        }
+        mySurfaceView.showCountries(MercatorApp.shownCountries)
     }
 
     public override fun onStart() {

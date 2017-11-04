@@ -5,8 +5,11 @@ import android.content.Context
 import android.content.res.Configuration
 import android.graphics.PointF
 import android.util.DisplayMetrics
+import android.util.Log
 import android.view.WindowManager
 import com.alex_aladdin.mercatorpuzzle.country.Country
+import java.util.*
+import kotlin.collections.ArrayList
 
 /**
  * Extending Application class.
@@ -15,10 +18,41 @@ class MercatorApp : Application() {
 
     companion object {
 
+        private const val TAG = "MercatorApp"
+
         lateinit var applicationContext: Context private set
         lateinit var screen: PointF private set
 
         val loadedCountries = ArrayList<Country>()
+        val shownCountries = ArrayList<Country>()
+
+        private lateinit var countryColors: IntArray
+        private val random = Random()
+
+        /**
+         * Returns random color from countryColors that's not used in any of shownCountries yet.
+         */
+        fun obtainColor(): Int {
+            fun getRandomFromList(list: List<Int>): Int {
+                val i = random.nextInt(list.size)
+                return list[i]
+            }
+
+            val range = countryColors.size - shownCountries.size
+            return if (range > 0) {
+                val allowableColors = ArrayList<Int>(range)
+                countryColors.forEach { color ->
+                    if (shownCountries.none { it.color == color }) {
+                        allowableColors.add(color)
+                    }
+                }
+                getRandomFromList(allowableColors)
+            }
+            else {
+                Log.e(TAG, "No free colors: number of shown countries is larger than number of colors")
+                getRandomFromList(countryColors.toList())
+            }
+        }
 
     }
 
@@ -26,6 +60,7 @@ class MercatorApp : Application() {
         super.onCreate()
 
         Companion.applicationContext = this.applicationContext
+        Companion.countryColors = resources.getIntArray(R.array.country_colors)
 
         getScreenSize()
     }

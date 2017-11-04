@@ -69,7 +69,7 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
         when(event?.action) {
             MotionEvent.ACTION_DOWN -> {
                 // Check out if touch is inside some country or not
-                for (country in MercatorApp.loadedCountries) {
+                for (country in MercatorApp.shownCountries) {
                     val touchPoint = PointF(event.x, event.y)
                     val touchCoordinates: LatLng = mapboxMap?.projection?.fromScreenLocation(touchPoint) ?: return false
                     val isInside = country.contains(touchCoordinates)
@@ -88,9 +88,9 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
                         Log.i(TAG, "Touch is inside ${country.name}")
 
                         // Move this country to the first position in the array
-                        if (MercatorApp.loadedCountries[0] != country) {
-                            MercatorApp.loadedCountries.remove(country)
-                            MercatorApp.loadedCountries.add(0, country)
+                        if (MercatorApp.shownCountries[0] != country) {
+                            MercatorApp.shownCountries.remove(country)
+                            MercatorApp.shownCountries.add(0, country)
                         }
 
                         return true

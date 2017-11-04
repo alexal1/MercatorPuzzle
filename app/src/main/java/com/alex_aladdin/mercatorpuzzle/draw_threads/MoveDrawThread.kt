@@ -1,12 +1,13 @@
 package com.alex_aladdin.mercatorpuzzle.draw_threads
 
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.PointF
 import android.os.Handler
 import android.os.Looper
 import android.view.SurfaceHolder
-import com.alex_aladdin.mercatorpuzzle.country.Country
 import com.alex_aladdin.mercatorpuzzle.MapActivity
+import com.alex_aladdin.mercatorpuzzle.country.Country
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.Projection
 
@@ -17,6 +18,12 @@ class MoveDrawThread(surfaceHolder: SurfaceHolder,
                      val projection: Projection,
                      val country: Country) : DrawThread("MoveDrawThread", surfaceHolder) {
 
+    companion object {
+
+        const val ALPHA = 0.5f
+
+    }
+
     var touchPoint: PointF? = null
     private var arePolygonsRemoved = false
 
@@ -26,7 +33,8 @@ class MoveDrawThread(surfaceHolder: SurfaceHolder,
             country.currentCenter = touchCoordinates
             this.drawCountry(
                     country = country.vertices,
-                    projection = { latLng -> projection.toScreenLocation(latLng) }
+                    projection = { latLng -> projection.toScreenLocation(latLng) },
+                    color = country.color.setAlpha(ALPHA)
             )
             // Remove country's polygons from the map if they haven't been yet
             if (!arePolygonsRemoved) {
@@ -36,6 +44,17 @@ class MoveDrawThread(surfaceHolder: SurfaceHolder,
                 }
             }
         }
+    }
+
+    /**
+     * Set alpha to this color, where alpha is expressed by value in [0..1].
+     */
+    private fun Int.setAlpha(value: Float): Int {
+        val alpha = (255 * value).toInt()
+        val red = Color.red(this)
+        val green = Color.green(this)
+        val blue = Color.blue(this)
+        return Color.argb(alpha, red, green, blue)
     }
 
 }

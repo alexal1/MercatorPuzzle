@@ -1,5 +1,6 @@
 package com.alex_aladdin.mercatorpuzzle.country
 
+import android.graphics.Color
 import com.alex_aladdin.google_maps_utils.PolyUtil
 import com.mapbox.mapboxsdk.geometry.LatLng
 
@@ -17,6 +18,7 @@ class Country(var vertices: ArrayList<ArrayList<LatLng>>, val id: String, val na
             updateVertices(value)
             field = value
         }
+    var color: Int = Color.TRANSPARENT
 
     private val relativeVertices = RelativeVertices(center = targetCenter, coordinates = vertices)
     private val latitudeBoundaries = LatitudeBoundaries(center = targetCenter, coordinates = vertices)
