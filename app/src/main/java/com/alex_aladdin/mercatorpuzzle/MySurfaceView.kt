@@ -1,14 +1,15 @@
 package com.alex_aladdin.mercatorpuzzle
 
+import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.PointF
-import android.graphics.PorterDuff
+import android.graphics.*
 import android.util.AttributeSet
 import android.util.Log
+import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.view.SurfaceView
+import com.alex_aladdin.google_maps_utils.PolyUtil
 import com.alex_aladdin.mercatorpuzzle.animators.CountriesAnimator
 import com.alex_aladdin.mercatorpuzzle.animators.MoveCountriesAnimator
 import com.alex_aladdin.mercatorpuzzle.animators.ScaleCountriesAnimator
@@ -33,11 +34,15 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
     companion object {
 
         const val TAG = "MercatorMySurfaceView"
+        const val TOUCH_AREA = 10f // mm
 
     }
 
     var mapboxMap: MapboxMap? = null
 
+    private val halfTouchSide: Float by lazy {
+        TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, TOUCH_AREA, context.resources.displayMetrics) / 2
+    }
     private var drawThread: DrawThread? = null
     private var countriesAnimator: CountriesAnimator? = null
     private var dragInProcess: Boolean = false
@@ -59,6 +64,7 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
         drawThread = null
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         if (!isEnabled) {
             return false
@@ -68,36 +74,34 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
 
         when(event?.action) {
             MotionEvent.ACTION_DOWN -> {
-                // Check out if touch is inside some country or not
-                for (country in MercatorApp.shownCountries) {
-                    val touchPoint = PointF(event.x, event.y)
-                    val touchCoordinates: LatLng = mapboxMap?.projection?.fromScreenLocation(touchPoint) ?: return false
-                    val isInside = country.contains(touchCoordinates)
+                // Check out whether some country is touched
+                val touchPoint = PointF(event.x, event.y)
+                currentCountry = findTouchedCountry(touchPoint)
 
-                    // If touch is inside country, start dragging
-                    if (isInside) {
-                        drawThread?.stopDrawing()
-                        drawThread = MoveDrawThread(
-                                surfaceHolder = holder,
-                                projection = mapboxMap!!.projection,
-                                country = country
-                        )
-                        drawThread!!.startDrawing()
-                        dragInProcess = true
-                        currentCountry = country
-                        Log.i(TAG, "Touch is inside ${country.name}")
+                if (currentCountry != null) {
+                    val country = currentCountry!!
 
-                        // Move this country to the first position in the array
-                        if (MercatorApp.shownCountries[0] != country) {
-                            MercatorApp.shownCountries.remove(country)
-                            MercatorApp.shownCountries.add(0, country)
-                        }
+                    drawThread?.stopDrawing()
+                    drawThread = MoveDrawThread(
+                            surfaceHolder = holder,
+                            projection = mapboxMap!!.projection,
+                            country = country
+                    )
+                    drawThread!!.startDrawing()
+                    dragInProcess = true
+                    Log.i(TAG, "Touch is inside ${country.name}")
 
-                        return true
+                    // Move this country to the first position in the array
+                    if (MercatorApp.shownCountries[0] != country) {
+                        MercatorApp.shownCountries.remove(country)
+                        MercatorApp.shownCountries.add(0, country)
                     }
-                }
 
-                return false
+                    return true
+                }
+                else {
+                    return false
+                }
             }
 
             MotionEvent.ACTION_MOVE -> {
@@ -182,6 +186,42 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
                 holder.unlockCanvasAndPost(it)
             }
         }
+    }
+
+    private fun findTouchedCountry(touchPoint: PointF): Country? {
+        if (mapboxMap == null) {
+            Log.e(TAG, "Cannot find touched Country as mapboxMap is null")
+            return null
+        }
+
+        // Try to find Country that contains touchPoint
+        val touchLatLng = mapboxMap!!.projection.fromScreenLocation(touchPoint)
+        MercatorApp.shownCountries.forEach { country ->
+            if (country.contains(touchLatLng)) {
+                return country
+            }
+        }
+
+        // Try to find Country that has at least one point inside touch square
+        val squareByPoint: List<PointF> = List(size = 4, init = { i ->
+            when (i) {
+                0 -> PointF(touchPoint.x - halfTouchSide, touchPoint.y + halfTouchSide)
+                1 -> PointF(touchPoint.x + halfTouchSide, touchPoint.y + halfTouchSide)
+                2 -> PointF(touchPoint.x + halfTouchSide, touchPoint.y - halfTouchSide)
+                3 -> PointF(touchPoint.x - halfTouchSide, touchPoint.y - halfTouchSide)
+                else -> throw IllegalArgumentException()
+            }
+        })
+        val squareByLatLng: List<LatLng> = List(size = 4, init = { i ->
+            mapboxMap!!.projection.fromScreenLocation(squareByPoint[i])
+        })
+        MercatorApp.shownCountries.forEach { country ->
+            country.vertices.flatten().firstOrNull { vertex ->
+                PolyUtil.containsLocation(vertex, squareByLatLng, false)
+            }?.let { return@findTouchedCountry country }
+        }
+
+        return null
     }
 
 }

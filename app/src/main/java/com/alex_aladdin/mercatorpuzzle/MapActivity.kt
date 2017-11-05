@@ -96,8 +96,12 @@ class MapActivity : AppCompatActivity() {
             Log.e(TAG, "Cannot draw country, mapboxMap is null!")
             return
         }
+        else if (polygonsOnMap.containsKey(country)) {
+            Log.e(TAG, "Cannot draw country, polygonsOnMap already contains one!")
+            return
+        }
 
-        polygonsOnMap[country] = ArrayList()
+        val countryPolygons = ArrayList<Polygon>()
 
         for (polygon in country.vertices) {
             // Condition from GeoJSON specification
@@ -110,8 +114,10 @@ class MapActivity : AppCompatActivity() {
                     .fillColor(country.color)
                     .addAll(polygon)
             val newPolygon = mapboxMap!!.addPolygon(polygonOptions)
-            polygonsOnMap[country]?.add(newPolygon)
+            countryPolygons.add(newPolygon)
         }
+
+        polygonsOnMap[country] = countryPolygons
     }
 
     /**
