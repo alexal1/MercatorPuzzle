@@ -1,6 +1,7 @@
 package com.alex_aladdin.mercatorpuzzle
 
 import android.graphics.PixelFormat
+import android.graphics.PointF
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
@@ -126,7 +127,11 @@ class MapActivity : AppCompatActivity() {
     private fun loadCountries() {
         GeoJsonParser(completion = { countries ->
             MercatorApp.loadedCountries.addAll(countries)
-            CountriesDisposition().apply(MercatorApp.loadedCountries)
+            val viewPort = ViewPort(
+                    northeast = mapboxMap!!.projection.fromScreenLocation(PointF(mapView.width.toFloat(), 0f)),
+                    southwest = mapboxMap!!.projection.fromScreenLocation(PointF(0f, mapView.height.toFloat()/1000))
+            )
+            CountriesDisposition(viewPort).apply(MercatorApp.loadedCountries)
             onCountriesLoaded()
         }).execute("RUS", "USA", "CHN", "LKA", "JPN")
     }
@@ -184,8 +189,8 @@ class MapActivity : AppCompatActivity() {
     data class ViewPort(val northeast: LatLng, val southwest: LatLng) {
 
         constructor() : this(
-                northeast = LatLng(LatitudeBoundaries.MAX_LATITUDE, 180.0),
-                southwest = LatLng(-LatitudeBoundaries.MAX_LATITUDE, -180.0)
+                northeast = LatLng(LatitudeBoundaries.MAX_MAP_LATITUDE, 180.0),
+                southwest = LatLng(-LatitudeBoundaries.MAX_MAP_LATITUDE, -180.0)
         )
 
     }

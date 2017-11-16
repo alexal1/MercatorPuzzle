@@ -9,32 +9,48 @@ import java.lang.Math.*
  * Class that calculates allowable range of latitudes for Country's center.
  * It is also used to check whether point lies in this range.
  */
-class LatitudeBoundaries(center: LatLng, coordinates: ArrayList<ArrayList<LatLng>>) {
+class LatitudeBoundaries(val center: LatLng,
+                         val coordinates: List<List<LatLng>>,
+                         maxLatitude: Double = +MAX_MAP_LATITUDE,
+                         minLatitude: Double = -MAX_MAP_LATITUDE) {
 
     companion object {
 
-        val MAX_LATITUDE = 85.06
+        const val MAX_MAP_LATITUDE = 85.06
+        private val R = MathUtil.EARTH_RADIUS
 
     }
 
-    private val R = MathUtil.EARTH_RADIUS
-    private var centerMax = MAX_LATITUDE
-    private var centerMin = -MAX_LATITUDE
+    private enum class Direction { NORTH, SOUTH }
+
+    var centerMax = maxLatitude
+        private set
+    var centerMin = minLatitude
+        private set
 
     init {
-        val n = findNormalVector(center)
-        val z0 = R * sin(MAX_LATITUDE.toRadians())
+        val distanceToNorth: Double
+        val distanceToSouth: Double
 
-        var minDistanceToNorth = Double.MAX_VALUE
-        var minDistanceToSouth = Double.MAX_VALUE
+        // Distances to the edges of the world
+        val distanceToNorthEdge = getDistanceToPole(Direction.NORTH, +MAX_MAP_LATITUDE)
+        val distanceToSouthEdge = getDistanceToPole(Direction.SOUTH, -MAX_MAP_LATITUDE)
 
-        for (point in coordinates.flatten()) {
-            getDistanceToPole(n, +z0, point)?.takeIf { it < minDistanceToNorth }?.let { minDistanceToNorth = it }
-            getDistanceToPole(n, -z0, point)?.takeIf { it < minDistanceToSouth }?.let { minDistanceToSouth = it }
+        distanceToNorth = if (maxLatitude == MAX_MAP_LATITUDE) {
+            distanceToNorthEdge
+        }
+        else {
+            max(-distanceToSouthEdge, getDistanceToPole(Direction.NORTH, maxLatitude))
         }
 
-        centerMax = SphericalUtil.computeOffset(center, minDistanceToNorth, 0.0).latitude
-        centerMin = SphericalUtil.computeOffset(center, minDistanceToSouth, 180.0).latitude
+        distanceToSouth = if (minLatitude == -MAX_MAP_LATITUDE) {
+            distanceToSouthEdge
+        }
+        else {
+            max(-distanceToNorthEdge, getDistanceToPole(Direction.SOUTH, minLatitude))
+        }
+
+        computeCenterBoundaries(distanceToNorth, distanceToSouth)
     }
 
     /**
@@ -53,6 +69,49 @@ class LatitudeBoundaries(center: LatLng, coordinates: ArrayList<ArrayList<LatLng
     private fun findNormalVector(center: LatLng): CartesianVector {
         val c = center.toCartesian()
         return CartesianVector(c.y * R, -c.x * R, 0.0).normalize()
+    }
+
+    private fun computeCenterBoundaries(distanceToNorth: Double, distanceToSouth: Double) {
+        centerMax = SphericalUtil.computeOffset(center, distanceToNorth, 0.0).latitude
+        centerMin = SphericalUtil.computeOffset(center, distanceToSouth, 180.0).latitude
+    }
+
+    /**
+     * Get distance to the pole with given latitude in given direction.
+     *
+     * If direction to the pole coincides with given direction, then distance is positive. It is a
+     * max distance by which country's center can be brought closer to the pole.
+     *
+     * If direction to the pole doesn't coincide with given direction, then distance is negative. It
+     * is a min distance by which country's center must be brought closer to the pole.
+     */
+    private fun getDistanceToPole(direction: Direction, latitude: Double): Double {
+        val n = findNormalVector(center)
+        val z0 = R * sin(latitude.toRadians())
+        val allPoints: List<LatLng> = coordinates.flatten()
+        val (abovePolePoints, belowPolePoints) = allPoints.partition { point -> point.latitude > latitude }
+        val distance: Double
+
+        when (direction) {
+            Direction.NORTH -> {
+                distance = if (abovePolePoints.isEmpty()) {
+                    belowPolePoints.map { point -> getDistanceToPole(n, z0, point) ?: Double.MAX_VALUE }.min()!!
+                }
+                else {
+                    -abovePolePoints.map { point -> getDistanceToPole(n, z0, point) ?: 0.0 }.max()!!
+                }
+            }
+            Direction.SOUTH -> {
+                distance = if (belowPolePoints.isEmpty()) {
+                    abovePolePoints.map { point -> getDistanceToPole(n, z0, point) ?: Double.MAX_VALUE }.min()!!
+                }
+                else {
+                    -belowPolePoints.map { point -> getDistanceToPole(n, z0, point) ?: 0.0 }.max()!!
+                }
+            }
+        }
+
+        return distance
     }
 
     /**

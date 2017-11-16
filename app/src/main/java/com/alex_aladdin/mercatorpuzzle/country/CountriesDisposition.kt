@@ -1,5 +1,6 @@
 package com.alex_aladdin.mercatorpuzzle.country
 
+import android.util.Log
 import com.alex_aladdin.mercatorpuzzle.MapActivity
 import com.mapbox.mapboxsdk.geometry.LatLng
 import java.util.*
@@ -8,54 +9,73 @@ import java.util.*
  * Class that performs initial disposition of given countries on a certain area of the map.
  *
  * @param viewPort area on the map, on which all countries will be placed
- * @param difficulty dispersion around the target position, measured in country's sizes
  */
-class CountriesDisposition(private val viewPort: MapActivity.ViewPort = MapActivity.ViewPort(),
-                           private val difficulty: Int = 5) {
+class CountriesDisposition(private val viewPort: MapActivity.ViewPort = MapActivity.ViewPort()) {
+
+    companion object {
+
+        const val TAG = "MercatorCDisposition"
+
+    }
 
     private val random = Random()
 
     fun apply(countries: List<Country>) {
         for (country in countries) {
-            // Limitations #1: by ViewPort
-            val longitudeStart1 = viewPort.southwest.longitude + country.size.width / 2
-            val longitudeEnd1 = viewPort.northeast.longitude - country.size.width / 2
-            val latitudeStart1 = viewPort.southwest.latitude + country.size.height / 2
-            val latitudeEnd1 = viewPort.northeast.latitude - country.size.height / 2
+            // Set random latitude within viewPort
+            val latitudeBoundaries = LatitudeBoundaries(
+                    center = country.currentCenter,
+                    coordinates = country.vertices,
+                    maxLatitude = viewPort.northeast.latitude,
+                    minLatitude = viewPort.southwest.latitude
+            )
+            val centersAreaBottom = latitudeBoundaries.centerMin
+            val centersAreaTop = latitudeBoundaries.centerMax
+            val newLatitude = if (centersAreaBottom < centersAreaTop) {
+                getRandomInRange(centersAreaBottom, centersAreaTop)
+            }
+            else {
+                Log.e(TAG, "Not enough space vertically for ${country.name}:\n"
+                        + "centersAreaBottom = $centersAreaBottom, centersAreaTop = $centersAreaTop")
+                (centersAreaBottom + centersAreaTop) / 2
+            }
+            country.currentCenter = LatLng(newLatitude, 0.0)
 
-            if (longitudeStart1 > longitudeEnd1 || latitudeStart1 > latitudeEnd1) {
-                throw IllegalArgumentException("Wrong or too small ViewPort!")
+            // Find difference between country center (0.0) and it's rect center
+            val rect = country.getRect()
+            val diff = rect.leftLng + rect.width / 2
+
+            // Find length of viewport
+            val west = viewPort.southwest.longitude
+            val east = viewPort.northeast.longitude
+            val length = if (west < east) {
+                east - west
+            }
+            else {
+                360.0 - west + east
             }
 
-            // Limitations #2: by difficulty
-            val longitudeStart2 = country.targetCenter.longitude - country.size.width * difficulty
-            val longitudeEnd2 = country.targetCenter.longitude + country.size.width * difficulty
-            val latitudeStart2 = country.targetCenter.latitude - country.size.height * difficulty
-            val latitudeEnd2 = country.targetCenter.latitude + country.size.height * difficulty
+            // Find random offset for rect center.
+            // It will be added to the west of the viewport plus country's half width.
+            val offset = if (length > rect.width) {
+                getRandomInRange(0.0, length - rect.width)
+            }
+            else {
+                Log.e(TAG, "Not enough space horizontally for ${country.name}:\n"
+                        + "length = $length, width = ${rect.width}")
+                (length - rect.width) / 2
+            }
 
-            // Obtain final limitations
-            val longitudeStart = if (longitudeStart2 < longitudeEnd1)
-                maxOf(longitudeStart1, longitudeStart2)
-            else
-                longitudeStart1
-            val longitudeEnd = if (longitudeEnd2 > longitudeStart1)
-                minOf(longitudeEnd1, longitudeEnd2)
-            else
-                longitudeEnd1
-            val latitudeStart = if (latitudeStart2 < latitudeEnd1)
-                maxOf(latitudeStart1, latitudeStart2)
-            else
-                latitudeStart1
-            val latitudeEnd = if (latitudeEnd2 > latitudeStart1)
-                minOf(latitudeEnd1, latitudeEnd2)
-            else
-                latitudeEnd1
+            // Find new longitude within viewport
+            var newLongitude = west + rect.width / 2 + offset - diff
+            if (newLongitude > 180.0) {
+                newLongitude = -180.0 + newLongitude % 180.0
+            }
+            else if (newLongitude < -180.0) {
+                newLongitude = 180.0 - newLongitude % 180.0
+            }
 
-            // Obtain random value
-            country.currentCenter = LatLng(
-                    getRandomInRange(latitudeStart, latitudeEnd),
-                    getRandomInRange(longitudeStart, longitudeEnd)
-            )
+            country.currentCenter = LatLng(country.currentCenter.latitude, newLongitude)
         }
     }
 

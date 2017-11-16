@@ -10,8 +10,9 @@ import com.mapbox.mapboxsdk.geometry.LatLng
  */
 class Country(var vertices: ArrayList<ArrayList<LatLng>>, val id: String, val name: String) {
 
-    val size = Size()
-    val targetCenter = getCenter()
+    private val initRect = getRect()
+
+    val targetCenter = initRect.center
     var currentCenter = targetCenter
         set(value) {
             latitudeBoundaries.check(value)
@@ -32,12 +33,10 @@ class Country(var vertices: ArrayList<ArrayList<LatLng>>, val id: String, val na
         vertices = relativeVertices.computeAbsoluteCoordinates(newCenter = newCenter)
     }
 
-    /**
-     * Calculate country's center.
-     */
-    private fun getCenter(): LatLng {
-        // We find center latitude just by taking half-sum of min and max latitudes
-        // To find center longitude we should firstly find boundary longitudes of the country
+    fun getRect(): CountryRect {
+        // Top and bottom are found simply as max and min latitudes.
+        // To find left and right we firstly find largest distance between longitudes
+        // and then take its boundaries.
         val longitudes: ArrayList<Double> = ArrayList()
 
         var minLat: Double = vertices[0][0].latitude
@@ -49,8 +48,6 @@ class Country(var vertices: ArrayList<ArrayList<LatLng>>, val id: String, val na
                 if (latLng.latitude > maxLat) maxLat = latLng.latitude
             }
         }
-        val centerLat: Double = (minLat + maxLat) / 2
-        size.height = Math.abs(maxLat - minLat)
 
         longitudes.sort()
 
@@ -77,17 +74,9 @@ class Country(var vertices: ArrayList<ArrayList<LatLng>>, val id: String, val na
                 }
             }
         }
-        val centerLng: Double
-        if (lng1 > lng2) {
-            centerLng = (lng1 + lng2) / 2
-            size.width = lng1 - lng2
-        }
-        else {
-            centerLng = ((lng1 + lng2) / 2 + 360.0) % 360.0 - 180.0
-            size.width = 360.0 - lng2 + lng1
-        }
 
-        return LatLng(centerLat, centerLng)
+        // Revert lng1 and lng2 as we need boundaries of the country, not of the longest distance
+        return CountryRect(leftLng = lng2, topLat = maxLat, rightLng = lng1, bottomLat = minLat)
     }
 
     /**
@@ -98,16 +87,17 @@ class Country(var vertices: ArrayList<ArrayList<LatLng>>, val id: String, val na
     /**
      * Check if Country's currentCenter is close enough to the targetCenter.
      */
-    fun isCloseToTarget(): Boolean = Math.abs(targetCenter.longitude - currentCenter.longitude) < size.width / 2
-            && Math.abs(targetCenter.latitude - currentCenter.latitude) < size.height / 2
+    fun isCloseToTarget(): Boolean {
+        val distY = Math.abs(targetCenter.latitude - currentCenter.latitude)
+        val distX = minOf(
+                Math.abs(targetCenter.longitude - currentCenter.longitude),
+                360.0 - Math.abs(targetCenter.longitude - currentCenter.longitude)
+        )
+        return (distX < initRect.width / 2 && distY < initRect.height / 2)
+    }
 
     override fun equals(other: Any?): Boolean = (other is Country) && (other.id == this@Country.id)
 
     override fun hashCode(): Int = this@Country.id.hashCode()
-
-    /**
-     * Country's width and height measured in degrees of longitude and latitude respectively.
-     */
-    data class Size(var width: Double = 0.0, var height: Double = 0.0)
 
 }
