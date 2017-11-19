@@ -3,6 +3,8 @@ package com.alex_aladdin.mercatorpuzzle
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
+import android.os.Handler
+import android.os.Looper
 import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
@@ -39,13 +41,13 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
     }
 
     var mapboxMap: MapboxMap? = null
+    var dragInProcess: Boolean = false
 
     private val halfTouchSide: Float by lazy {
         TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, TOUCH_AREA, context.resources.displayMetrics) / 2
     }
     private var drawThread: DrawThread? = null
     private var countriesAnimator: CountriesAnimator? = null
-    private var dragInProcess: Boolean = false
     private var currentCountry: Country? = null
 
     init {
@@ -123,7 +125,9 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
                         drawThread?.stopDrawing()
                         drawThread = null
                         currentCountry?.let {
-                            (context as MapActivity).drawCountry(it)
+                            Handler(Looper.getMainLooper()).post {
+                                (context as MapActivity).drawCountry(it)
+                            }
                         }
                     }
 

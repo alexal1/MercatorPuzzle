@@ -89,6 +89,23 @@ class MapActivity : AppCompatActivity() {
         }
     }
 
+    override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
+        // Cancel drag and delegate touch processing to mapView for multitouch gestures
+        return if (event != null && event.pointerCount > 1) {
+            if (mySurfaceView.dragInProcess) {
+                val eventCopy = MotionEvent.obtain(event)
+                eventCopy.action = MotionEvent.ACTION_CANCEL
+                mySurfaceView.dispatchTouchEvent(eventCopy)
+                mySurfaceView.clearCanvas()
+            }
+            mapView.dispatchTouchEvent(event)
+            true
+        }
+        else {
+            super.dispatchTouchEvent(event)
+        }
+    }
+
     /**
      * Draw country on the map.
      */
