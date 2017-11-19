@@ -157,6 +157,7 @@ class MapActivity : AppCompatActivity() {
      * Function that's invoked when countries are loaded.
      */
     private fun onCountriesLoaded() {
+        MercatorApp.shownCountries.forEach { removePolygons(it) }
         MercatorApp.shownCountries.clear()
         for (country in MercatorApp.loadedCountries) {
             country.color = MercatorApp.obtainColor()
