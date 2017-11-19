@@ -10,6 +10,14 @@ import com.alex_aladdin.mercatorpuzzle.MercatorApp
  */
 abstract class DrawThread(threadName: String, private val surfaceHolder: SurfaceHolder) : Thread(threadName) {
 
+    companion object {
+
+        // By this limit we determine whether a next point is on the opposite part of the screen
+        // and we should draw a separate polygon there.
+        val DEFAULT_DISTANCE_LIMIT = MercatorApp.screen.x / 2
+
+    }
+
     private val tag = "Mercator$threadName"
     private var runFlag: Boolean = false
 
@@ -39,7 +47,10 @@ abstract class DrawThread(threadName: String, private val surfaceHolder: Surface
      * Draw Country on the given Canvas as a list of polygons. Each polygon can be represented
      * by points of any type, which can be translated to PointF by given projection function.
      */
-    protected fun <T> Canvas.drawCountry(country: List<List<T>>, projection: (T) -> PointF?, color: Int) {
+    protected fun <T> Canvas.drawCountry(country: List<List<T>>,
+                                         projection: (T) -> PointF?,
+                                         color: Int,
+                                         distanceLimit: Float = DEFAULT_DISTANCE_LIMIT) {
         val paint = Paint()
         paint.color = color
         paint.isAntiAlias = true
@@ -57,13 +68,11 @@ abstract class DrawThread(threadName: String, private val surfaceHolder: Surface
             var startCutPolygon = false
             // Previous point
             var prevPoint: PointF = pointStart
-            // Half of screen width
-            val halfScreen = MercatorApp.screen.x / 2
             // Go through all points
             (1 until polygon.size).forEach { i ->
                 val point: PointF = projection(polygon[i]) ?: return@drawPolygon false
 
-                if (point.distanceTo(prevPoint) > halfScreen) {
+                if (point.distanceX(prevPoint) > distanceLimit) {
                     startCutPolygon = !startCutPolygon
                 }
 
@@ -102,11 +111,10 @@ abstract class DrawThread(threadName: String, private val surfaceHolder: Surface
     }
 
     /**
-     * Euclidean distance between two points.
+     * Distance along X axis between two points.
      */
-    private fun PointF.distanceTo(point: PointF): Float {
-        return Math.sqrt(Math.pow(point.x.toDouble() - this.x.toDouble(), 2.0)
-                + Math.pow(point.y.toDouble() - this.y.toDouble(), 2.0)).toFloat()
+    private fun PointF.distanceX(point: PointF): Float {
+        return Math.abs(this@distanceX.x - point.x)
     }
 
     /**

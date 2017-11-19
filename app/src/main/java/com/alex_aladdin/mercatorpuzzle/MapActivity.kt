@@ -129,7 +129,7 @@ class MapActivity : AppCompatActivity() {
             MercatorApp.loadedCountries.addAll(countries)
             val viewPort = ViewPort(
                     northeast = mapboxMap!!.projection.fromScreenLocation(PointF(mapView.width.toFloat(), 0f)),
-                    southwest = mapboxMap!!.projection.fromScreenLocation(PointF(0f, mapView.height.toFloat()/1000))
+                    southwest = mapboxMap!!.projection.fromScreenLocation(PointF(0f, mapView.height.toFloat()))
             )
             CountriesDisposition(viewPort).apply(MercatorApp.loadedCountries)
             onCountriesLoaded()

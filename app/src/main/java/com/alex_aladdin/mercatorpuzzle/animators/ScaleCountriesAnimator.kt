@@ -29,15 +29,18 @@ class ScaleCountriesAnimator(scaleDrawThread: ScaleDrawThread) : CountriesAnimat
                 animator.addUpdateListener { animation: ValueAnimator? ->
                     val value: Float = animation?.animatedValue as? Float ?: 0f
 
-                    scales[country] = { point ->
-                        val w = MercatorApp.screen.x
-                        val h = MercatorApp.screen.y
-                        val w1 = w * value
-                        val h1 = h * value
-                        val (x0, y0) = centers[country]!!.let { Pair(it.x, it.y) }
+                    scales[country] = ScaleDrawThread.Scale(
+                            scaleFactor = value,
+                            scaleMapping = { point ->
+                                val w = MercatorApp.screen.x
+                                val h = MercatorApp.screen.y
+                                val w1 = w * value
+                                val h1 = h * value
+                                val (x0, y0) = centers[country]!!.let { Pair(it.x, it.y) }
 
-                        PointF(x0 * (1f - value) + point.x / w * w1, y0 * (1f - value) + point.y / h * h1)
-                    }
+                                PointF(x0 * (1f - value) + point.x / w * w1, y0 * (1f - value) + point.y / h * h1)
+                            }
+                    )
                 }
                 animator.startDelay = OFFSET * count
 
@@ -52,7 +55,7 @@ class ScaleCountriesAnimator(scaleDrawThread: ScaleDrawThread) : CountriesAnimat
 
                 override fun onAnimationEnd(animation: Animator?) {
                     super.onAnimationEnd(animation)
-                    scales.keys.forEach { scales[it] = { point -> point } }
+                    scales.keys.forEach { scales[it] = ScaleDrawThread.Scale(1f, { point -> point }) }
                     isInProgress = false
                     onFinish?.invoke()
                 }

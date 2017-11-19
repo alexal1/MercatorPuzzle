@@ -14,7 +14,7 @@ class ScaleDrawThread private constructor(
         private val points: Map<Country, List<List<PointF>>>,
         private val colors: Map<Country, Int>,
         val centers: Map<Country, PointF>,
-        val scales: HashMap<Country, (PointF) -> PointF?>) : DrawThread("ScaleDrawThread", surfaceHolder) {
+        val scales: HashMap<Country, Scale>) : DrawThread("ScaleDrawThread", surfaceHolder) {
 
     companion object {
 
@@ -22,7 +22,7 @@ class ScaleDrawThread private constructor(
             val points = HashMap<Country, List<List<PointF>>>(countries.size)
             val colors = HashMap<Country, Int>()
             val centers = HashMap<Country, PointF>()
-            val scales = HashMap<Country, (PointF) -> PointF?>()
+            val scales = HashMap<Country, Scale>()
 
             countries.forEach { country ->
                 val countryPoints = ArrayList<ArrayList<PointF>>()
@@ -39,7 +39,7 @@ class ScaleDrawThread private constructor(
 
                 centers[country] = projection.toScreenLocation(country.currentCenter)
 
-                scales[country] = { null }
+                scales[country] = Scale()
             }
 
             return ScaleDrawThread(surfaceHolder, points, colors, centers, scales)
@@ -53,10 +53,17 @@ class ScaleDrawThread private constructor(
             val countryColor = colors[country]!!
             this.drawCountry(
                     country = countryPoints,
-                    projection = countryScale,
-                    color = countryColor
+                    projection = countryScale.scaleMapping,
+                    color = countryColor,
+                    distanceLimit = countryScale.scaleFactor * DEFAULT_DISTANCE_LIMIT
             )
         }
+    }
+
+    data class Scale(val scaleFactor: Float, val scaleMapping: (PointF) -> PointF?) {
+
+        constructor() : this(0f, { null })
+
     }
 
 }
