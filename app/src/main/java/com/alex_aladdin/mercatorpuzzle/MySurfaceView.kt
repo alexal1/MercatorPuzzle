@@ -198,28 +198,32 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
             return null
         }
 
-        // Try to find Country that contains touchPoint
+        // Touch point
         val touchLatLng = mapboxMap!!.projection.fromScreenLocation(touchPoint)
-        MercatorApp.shownCountries.forEach { country ->
-            if (country.contains(touchLatLng)) {
-                return country
-            }
+
+        // Touch square
+        val squareByPoint: List<PointF> by lazy {
+            List(size = 4, init = { i ->
+                when (i) {
+                    0 -> PointF(touchPoint.x - halfTouchSide, touchPoint.y + halfTouchSide)
+                    1 -> PointF(touchPoint.x + halfTouchSide, touchPoint.y + halfTouchSide)
+                    2 -> PointF(touchPoint.x + halfTouchSide, touchPoint.y - halfTouchSide)
+                    3 -> PointF(touchPoint.x - halfTouchSide, touchPoint.y - halfTouchSide)
+                    else -> throw IllegalArgumentException()
+                }
+            })
+        }
+        val squareByLatLng: List<LatLng> by lazy {
+            List(size = 4, init = { i ->
+                mapboxMap!!.projection.fromScreenLocation(squareByPoint[i])
+            })
         }
 
-        // Try to find Country that has at least one point inside touch square
-        val squareByPoint: List<PointF> = List(size = 4, init = { i ->
-            when (i) {
-                0 -> PointF(touchPoint.x - halfTouchSide, touchPoint.y + halfTouchSide)
-                1 -> PointF(touchPoint.x + halfTouchSide, touchPoint.y + halfTouchSide)
-                2 -> PointF(touchPoint.x + halfTouchSide, touchPoint.y - halfTouchSide)
-                3 -> PointF(touchPoint.x - halfTouchSide, touchPoint.y - halfTouchSide)
-                else -> throw IllegalArgumentException()
-            }
-        })
-        val squareByLatLng: List<LatLng> = List(size = 4, init = { i ->
-            mapboxMap!!.projection.fromScreenLocation(squareByPoint[i])
-        })
         MercatorApp.shownCountries.forEach { country ->
+            if (country.contains(touchLatLng)) {
+                return@findTouchedCountry country
+            }
+
             country.vertices.flatten().firstOrNull { vertex ->
                 PolyUtil.containsLocation(vertex, squareByLatLng, false)
             }?.let { return@findTouchedCountry country }
