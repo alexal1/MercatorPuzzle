@@ -131,7 +131,7 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
                         }
                     }
 
-                    if (currentCountry?.isCloseToTarget() == true) {
+                    if (event.action == MotionEvent.ACTION_UP && currentCountry?.isCloseToTarget() == true) {
                         (drawThread as? MoveDrawThread)?.let { countriesAnimator = MoveCountriesAnimator(it) }
                         countriesAnimator?.animate { doFinally() }
                     }

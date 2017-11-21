@@ -36,6 +36,7 @@ class MapActivity : AppCompatActivity() {
     }
 
     private var mapboxMap: MapboxMap? = null
+    private var isMultiTouchAfterDrag = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,19 +91,30 @@ class MapActivity : AppCompatActivity() {
     }
 
     override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
-        // Cancel drag and delegate touch processing to mapView for multitouch gestures
-        return if (event != null && event.pointerCount > 1) {
+        val isMultiTouchStarting = (event != null && event.actionMasked == MotionEvent.ACTION_POINTER_DOWN)
+        val isMultiTouchGoing = (event != null && event.pointerCount > 1)
+        val isMultiTouchFinishing = (event != null &&
+                (event.actionMasked == MotionEvent.ACTION_POINTER_UP
+                || event.action == MotionEvent.ACTION_UP
+                || event.action == MotionEvent.ACTION_CANCEL))
+
+        // Let mapView to handle multi touches that started immediately after country dragging
+        if ((isMultiTouchGoing && isMultiTouchAfterDrag) || (isMultiTouchStarting && mySurfaceView.dragInProcess)) {
             if (mySurfaceView.dragInProcess) {
                 val eventCopy = MotionEvent.obtain(event)
                 eventCopy.action = MotionEvent.ACTION_CANCEL
                 mySurfaceView.dispatchTouchEvent(eventCopy)
                 mySurfaceView.clearCanvas()
+                isMultiTouchAfterDrag = true
             }
             mapView.dispatchTouchEvent(event)
-            true
+            return true
         }
         else {
-            super.dispatchTouchEvent(event)
+            if (isMultiTouchFinishing) {
+                isMultiTouchAfterDrag = false
+            }
+            return super.dispatchTouchEvent(event)
         }
     }
 
