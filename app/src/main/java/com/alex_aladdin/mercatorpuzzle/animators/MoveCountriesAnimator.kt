@@ -34,7 +34,10 @@ class MoveCountriesAnimator(moveDrawThread: MoveDrawThread) : CountriesAnimator(
 
                 override fun onAnimationEnd(animation: Animator?) {
                     super.onAnimationEnd(animation)
-                    country.currentCenter = country.targetCenter
+                    touchPoint = null
+                    synchronized(country) {
+                        country.currentCenter = country.targetCenter
+                    }
                     isInProgress = false
                     onFinish?.invoke()
                 }

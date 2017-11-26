@@ -122,8 +122,6 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
 
                     // Operations to do either immediately or after animation finishes
                     fun doFinally() {
-                        drawThread?.stopDrawing()
-                        drawThread = null
                         currentCountry?.let {
                             Handler(Looper.getMainLooper()).post {
                                 (context as MapActivity).drawCountry(it)
@@ -132,10 +130,18 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
                     }
 
                     if (event.action == MotionEvent.ACTION_UP && currentCountry?.isCloseToTarget() == true) {
-                        (drawThread as? MoveDrawThread)?.let { countriesAnimator = MoveCountriesAnimator(it) }
-                        countriesAnimator?.animate { doFinally() }
+                        (drawThread as? MoveDrawThread)?.let { moveDrawThread ->
+                            countriesAnimator = MoveCountriesAnimator(moveDrawThread)
+                            countriesAnimator?.animate {
+                                moveDrawThread.stopDrawingInTargetPos = true
+                                drawThread = null
+                                doFinally()
+                            }
+                        }
                     }
                     else {
+                        drawThread?.stopDrawing()
+                        drawThread = null
                         doFinally()
                     }
 

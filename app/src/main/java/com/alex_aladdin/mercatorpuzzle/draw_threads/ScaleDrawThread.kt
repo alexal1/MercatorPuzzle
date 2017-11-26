@@ -5,6 +5,7 @@ import android.graphics.PointF
 import android.view.SurfaceHolder
 import com.alex_aladdin.mercatorpuzzle.country.Country
 import com.mapbox.mapboxsdk.maps.Projection
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * ScaleDrawThread is used for several Countries' simultaneous scaling.
@@ -14,15 +15,15 @@ class ScaleDrawThread private constructor(
         private val points: Map<Country, List<List<PointF>>>,
         private val colors: Map<Country, Int>,
         val centers: Map<Country, PointF>,
-        val scales: HashMap<Country, Scale>) : DrawThread("ScaleDrawThread", surfaceHolder) {
+        val scales: MutableMap<Country, Scale>) : DrawThread("ScaleDrawThread", surfaceHolder) {
 
     companion object {
 
         fun obtain(surfaceHolder: SurfaceHolder, projection: Projection, countries: List<Country>): ScaleDrawThread {
-            val points = HashMap<Country, List<List<PointF>>>(countries.size)
+            val points = HashMap<Country, List<List<PointF>>>()
             val colors = HashMap<Country, Int>()
             val centers = HashMap<Country, PointF>()
-            val scales = HashMap<Country, Scale>()
+            val scales = ConcurrentHashMap<Country, Scale>()
 
             countries.forEach { country ->
                 val countryPoints = ArrayList<ArrayList<PointF>>()

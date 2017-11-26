@@ -19,7 +19,7 @@ abstract class DrawThread(threadName: String, private val surfaceHolder: Surface
     }
 
     private val tag = "Mercator$threadName"
-    private var runFlag: Boolean = false
+    @Volatile var runFlag: Boolean = false
 
     abstract fun Canvas.drawFrame()
 
@@ -113,9 +113,7 @@ abstract class DrawThread(threadName: String, private val surfaceHolder: Surface
     /**
      * Distance along X axis between two points.
      */
-    private fun PointF.distanceX(point: PointF): Float {
-        return Math.abs(this@distanceX.x - point.x)
-    }
+    private fun PointF.distanceX(point: PointF): Float = Math.abs(this@distanceX.x - point.x)
 
     /**
      * Starts this DrawThread.

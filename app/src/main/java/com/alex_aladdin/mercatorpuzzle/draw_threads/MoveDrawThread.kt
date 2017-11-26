@@ -24,13 +24,16 @@ class MoveDrawThread(surfaceHolder: SurfaceHolder,
 
     }
 
-    var touchPoint: PointF? = null
+    @Volatile var touchPoint: PointF? = null
+    @Volatile var stopDrawingInTargetPos = false
     private var arePolygonsRemoved = false
 
     override fun Canvas.drawFrame() {
-        touchPoint?.let {
-            val touchCoordinates: LatLng = projection.fromScreenLocation(it)
-            country.currentCenter = touchCoordinates
+        synchronized(country) {
+            touchPoint?.let {
+                val touchCoordinates: LatLng = projection.fromScreenLocation(it)
+                country.currentCenter = touchCoordinates
+            }
             this.drawCountry(
                     country = country.vertices,
                     projection = { latLng -> projection.toScreenLocation(latLng) },
@@ -42,6 +45,10 @@ class MoveDrawThread(surfaceHolder: SurfaceHolder,
                 Handler(Looper.getMainLooper()).post {
                     MapActivity.removePolygons(country)
                 }
+            }
+
+            if (stopDrawingInTargetPos && country.currentCenter == country.targetCenter) {
+                runFlag = false
             }
         }
     }
