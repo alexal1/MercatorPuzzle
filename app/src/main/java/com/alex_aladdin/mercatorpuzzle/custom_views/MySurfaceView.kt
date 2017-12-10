@@ -1,4 +1,4 @@
-package com.alex_aladdin.mercatorpuzzle
+package com.alex_aladdin.mercatorpuzzle.custom_views
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -14,6 +14,8 @@ import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import com.alex_aladdin.google_maps_utils.PolyUtil
+import com.alex_aladdin.mercatorpuzzle.MapActivity
+import com.alex_aladdin.mercatorpuzzle.MercatorApp
 import com.alex_aladdin.mercatorpuzzle.animators.CountriesAnimator
 import com.alex_aladdin.mercatorpuzzle.animators.MoveCountriesAnimator
 import com.alex_aladdin.mercatorpuzzle.animators.ScaleCountriesAnimator
