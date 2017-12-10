@@ -12,7 +12,9 @@ import com.alex_aladdin.mercatorpuzzle.country.LatitudeBoundaries
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.annotations.Polygon
 import com.mapbox.mapboxsdk.annotations.PolygonOptions
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
+import com.mapbox.mapboxsdk.geometry.LatLngBounds
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import kotlinx.android.synthetic.main.activity_map.*
 
@@ -80,6 +82,7 @@ class MapActivity : AppCompatActivity() {
                 MotionEvent.ACTION_DOWN -> {
                     mySurfaceView.clearCanvas()
                     mySurfaceView.isEnabled = false
+                    myFloatingActionButton.isFocusedOnCountry = false
                 }
 
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
@@ -151,6 +154,21 @@ class MapActivity : AppCompatActivity() {
     }
 
     /**
+     * Move camera close to the given country.
+     */
+    fun focusCameraOn(country: Country) {
+        val rect = country.getRect()
+        val latLngBounds = LatLngBounds.Builder()
+                .include(LatLng(rect.topLat, rect.rightLng))    // northeast
+                .include(LatLng(rect.bottomLat, rect.leftLng))  // southwest
+                .build()
+        val padding = (maxOf(MercatorApp.screen.x, MercatorApp.screen.y) / 8).toInt()
+        mapboxMap?.easeCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, padding), 1000)
+        mySurfaceView.countriesAnimator?.cancel()
+        mySurfaceView.clearCanvas()
+    }
+
+    /**
      * Load countries from GeoJSON.
      */
     private fun loadCountries() {
@@ -175,6 +193,7 @@ class MapActivity : AppCompatActivity() {
             country.color = MercatorApp.obtainColor()
             MercatorApp.shownCountries.add(country)
         }
+        myFloatingActionButton.currentCountry = MercatorApp.shownCountries.firstOrNull()
         mySurfaceView.showCountries(MercatorApp.shownCountries)
     }
 

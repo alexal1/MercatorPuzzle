@@ -2,7 +2,9 @@ package com.alex_aladdin.mercatorpuzzle
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.*
+import android.graphics.Canvas
+import android.graphics.PointF
+import android.graphics.PorterDuff
 import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
@@ -42,12 +44,12 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
 
     var mapboxMap: MapboxMap? = null
     var dragInProcess: Boolean = false
+    var countriesAnimator: CountriesAnimator? = null
 
     private val halfTouchSide: Float by lazy {
         TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, TOUCH_AREA, context.resources.displayMetrics) / 2
     }
     private var drawThread: DrawThread? = null
-    private var countriesAnimator: CountriesAnimator? = null
     private var currentCountry: Country? = null
 
     init {
