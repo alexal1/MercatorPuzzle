@@ -192,6 +192,7 @@ class MapActivity : AppCompatActivity() {
         for (country in MercatorApp.loadedCountries) {
             country.color = MercatorApp.obtainColor()
             MercatorApp.shownCountries.add(country)
+            country.addPropertyChangeListener(myFloatingActionButton)
         }
         myFloatingActionButton.currentCountry = MercatorApp.shownCountries.firstOrNull()
         mySurfaceView.showCountries(MercatorApp.shownCountries)

@@ -10,8 +10,10 @@ import com.alex_aladdin.mercatorpuzzle.MapActivity
 import com.alex_aladdin.mercatorpuzzle.MercatorApp
 import com.alex_aladdin.mercatorpuzzle.R
 import com.alex_aladdin.mercatorpuzzle.country.Country
+import java.beans.PropertyChangeEvent
+import java.beans.PropertyChangeListener
 
-class MyFloatingActionButton : FloatingActionButton, View.OnClickListener {
+class MyFloatingActionButton : FloatingActionButton, View.OnClickListener, PropertyChangeListener {
 
     companion object {
 
@@ -63,6 +65,15 @@ class MyFloatingActionButton : FloatingActionButton, View.OnClickListener {
                 }
                 callOnClick()
             }
+        }
+    }
+
+    override fun propertyChange(pce: PropertyChangeEvent?) {
+        pce ?: return
+
+        if (pce.propertyName == Country.PROPERTY_CURRENT_CENTER) {
+            isFocusedOnCountry = false
+            currentCountry = pce.source as Country
         }
     }
 

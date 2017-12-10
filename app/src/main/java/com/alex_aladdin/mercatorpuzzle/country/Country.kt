@@ -3,12 +3,20 @@ package com.alex_aladdin.mercatorpuzzle.country
 import android.graphics.Color
 import com.alex_aladdin.google_maps_utils.PolyUtil
 import com.mapbox.mapboxsdk.geometry.LatLng
+import java.beans.PropertyChangeListener
+import java.beans.PropertyChangeSupport
 
 /**
  * This class represents one draggable country.
  * Country's vertices are stored as a list of polygons, and each polygon is a list of coordinates.
  */
 class Country(var vertices: ArrayList<ArrayList<LatLng>>, val id: String, val name: String) {
+
+    companion object {
+
+        val PROPERTY_CURRENT_CENTER = "com.alex_aladdin.mercatorpuzzle.country.Country.PROPERTY_CURRENT_CENTER"
+
+    }
 
     private val initRect = getRect()
 
@@ -17,12 +25,22 @@ class Country(var vertices: ArrayList<ArrayList<LatLng>>, val id: String, val na
         set(value) {
             latitudeBoundaries.check(value)
             updateVertices(value)
+            pcs.firePropertyChange(PROPERTY_CURRENT_CENTER, field, value)
             field = value
         }
     var color: Int = Color.TRANSPARENT
 
     private val relativeVertices = RelativeVertices(center = targetCenter, coordinates = vertices)
     private val latitudeBoundaries = LatitudeBoundaries(center = targetCenter, coordinates = vertices)
+    private val pcs = PropertyChangeSupport(this@Country)
+
+    fun addPropertyChangeListener(listener: PropertyChangeListener) {
+        pcs.addPropertyChangeListener(listener)
+    }
+
+    fun removePropertyChangeListener(listener: PropertyChangeListener) {
+        pcs.removePropertyChangeListener(listener)
+    }
 
     /**
      * Update all Country's vertices by moving them according to the new Country's center.
