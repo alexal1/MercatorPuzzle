@@ -6,7 +6,6 @@ import android.support.design.widget.FloatingActionButton
 import android.support.v4.content.ContextCompat
 import android.util.AttributeSet
 import android.view.View
-import com.alex_aladdin.mercatorpuzzle.MapActivity
 import com.alex_aladdin.mercatorpuzzle.MercatorApp
 import com.alex_aladdin.mercatorpuzzle.R
 import com.alex_aladdin.mercatorpuzzle.country.Country
@@ -29,6 +28,8 @@ class MyFloatingActionButton : FloatingActionButton, View.OnClickListener, Prope
 
     var currentCountry: Country? = null
         set(value) {
+            if (value == field) return
+
             field = value
 
             if (value != null) {
@@ -41,8 +42,10 @@ class MyFloatingActionButton : FloatingActionButton, View.OnClickListener, Prope
 
     var isFocusedOnCountry = false
 
+    private var additionalListener: OnClickListener? = null
+
     init {
-        setOnClickListener(this@MyFloatingActionButton)
+        setOnClickListener(null)
         setColor(defaultColor)
     }
 
@@ -50,11 +53,18 @@ class MyFloatingActionButton : FloatingActionButton, View.OnClickListener, Prope
         this@MyFloatingActionButton.backgroundTintList = ColorStateList.valueOf(color)
     }
 
+    override fun setOnClickListener(listener: OnClickListener?) {
+        additionalListener = listener
+        super.setOnClickListener { view ->
+            this@MyFloatingActionButton.onClick(view)
+        }
+    }
+
     override fun onClick(view: View?) {
         currentCountry?.let { country ->
             if (!isFocusedOnCountry) {
                 isFocusedOnCountry = true
-                (context as? MapActivity)?.focusCameraOn(country)
+                additionalListener?.onClick(view)
             }
             else {
                 isFocusedOnCountry = false

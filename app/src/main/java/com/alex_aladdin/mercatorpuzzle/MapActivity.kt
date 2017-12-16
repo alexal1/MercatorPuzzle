@@ -50,6 +50,8 @@ class MapActivity : AppCompatActivity() {
         mapView.onCreate(savedInstanceState)
         initMap()
 
+        setListeners()
+
         mySurfaceView.setZOrderMediaOverlay(true)               // Show MySurfaceView above MapView
         mySurfaceView.holder.setFormat(PixelFormat.TRANSPARENT) // Make MySurfaceView transparent
     }
@@ -90,6 +92,16 @@ class MapActivity : AppCompatActivity() {
                 }
             }
             return@setOnTouchListener false
+        }
+    }
+
+    /**
+     * Set listeners for all controls.
+     */
+    private fun setListeners() {
+        myFloatingActionButton.setOnClickListener {
+            myFloatingActionButton.currentCountry?.let { focusCameraOn(it) }
+            flagView.currentCountry = null
         }
     }
 
@@ -156,7 +168,7 @@ class MapActivity : AppCompatActivity() {
     /**
      * Move camera close to the given country.
      */
-    fun focusCameraOn(country: Country) {
+    private fun focusCameraOn(country: Country) {
         val rect = country.getRect()
         val latLngBounds = LatLngBounds.Builder()
                 .include(LatLng(rect.topLat, rect.rightLng))    // northeast
@@ -193,6 +205,7 @@ class MapActivity : AppCompatActivity() {
             country.color = MercatorApp.obtainColor()
             MercatorApp.shownCountries.add(country)
             country.addPropertyChangeListener(myFloatingActionButton)
+            country.addPropertyChangeListener(flagView)
         }
         myFloatingActionButton.currentCountry = MercatorApp.shownCountries.firstOrNull()
         mySurfaceView.showCountries(MercatorApp.shownCountries)
