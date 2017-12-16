@@ -9,7 +9,6 @@ import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
 import android.util.Log
-import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.view.SurfaceView
@@ -23,6 +22,7 @@ import com.alex_aladdin.mercatorpuzzle.country.Country
 import com.alex_aladdin.mercatorpuzzle.draw_threads.DrawThread
 import com.alex_aladdin.mercatorpuzzle.draw_threads.MoveDrawThread
 import com.alex_aladdin.mercatorpuzzle.draw_threads.ScaleDrawThread
+import com.alex_aladdin.mercatorpuzzle.helpers.mm
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapboxMap
 
@@ -48,9 +48,7 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
     var dragInProcess: Boolean = false
     var countriesAnimator: CountriesAnimator? = null
 
-    private val halfTouchSide: Float by lazy {
-        TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, TOUCH_AREA, context.resources.displayMetrics) / 2
-    }
+    private val halfTouchSide = TOUCH_AREA.mm / 2
     private var drawThread: DrawThread? = null
     private var currentCountry: Country? = null
 
