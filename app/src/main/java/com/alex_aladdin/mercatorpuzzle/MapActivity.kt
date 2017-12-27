@@ -204,8 +204,8 @@ class MapActivity : AppCompatActivity() {
         for (country in MercatorApp.loadedCountries) {
             country.color = MercatorApp.obtainColor()
             MercatorApp.shownCountries.add(country)
-            country.addPropertyChangeListener(myFloatingActionButton)
-            country.addPropertyChangeListener(flagView)
+            myFloatingActionButton.subscribeOn(country.currentCenterObservable)
+            flagView.subscribeOn(country.currentCenterObservable)
         }
         myFloatingActionButton.currentCountry = MercatorApp.shownCountries.firstOrNull()
         mySurfaceView.showCountries(MercatorApp.shownCountries)

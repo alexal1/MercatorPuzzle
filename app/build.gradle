@@ -35,10 +35,13 @@ dependencies {
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     testCompile 'junit:junit:4.12'
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
-    implementation ('com.mapbox.mapboxsdk:mapbox-android-sdk:5.2.1@aar') {
+    implementation ('com.mapbox.mapboxsdk:mapbox-android-sdk:5.3.0@aar') {
         transitive = true
     }
     compile 'com.google.code.gson:gson:2.8.1'
+    compile 'io.reactivex.rxjava2:rxjava:2.1.7'
+    compile 'io.reactivex.rxjava2:rxkotlin:2.2.0'
+    compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
 }
 repositories {
     mavenCentral()

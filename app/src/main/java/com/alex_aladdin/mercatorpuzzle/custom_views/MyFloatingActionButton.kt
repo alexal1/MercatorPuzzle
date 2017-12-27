@@ -9,10 +9,12 @@ import android.view.View
 import com.alex_aladdin.mercatorpuzzle.MercatorApp
 import com.alex_aladdin.mercatorpuzzle.R
 import com.alex_aladdin.mercatorpuzzle.country.Country
-import java.beans.PropertyChangeEvent
-import java.beans.PropertyChangeListener
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 
-class MyFloatingActionButton : FloatingActionButton, View.OnClickListener, PropertyChangeListener {
+class MyFloatingActionButton : FloatingActionButton, View.OnClickListener {
 
     companion object {
 
@@ -42,11 +44,23 @@ class MyFloatingActionButton : FloatingActionButton, View.OnClickListener, Prope
 
     var isFocusedOnCountry = false
 
+    private val compositeDisposable = CompositeDisposable()
     private var additionalListener: OnClickListener? = null
 
     init {
         setOnClickListener(null)
         setColor(defaultColor)
+    }
+
+    fun subscribeOn(observable: Observable<Country>) {
+        val disposable: Disposable = observable
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe { country ->
+                    isFocusedOnCountry = false
+                    currentCountry = country
+                }
+
+        compositeDisposable.add(disposable)
     }
 
     private fun setColor(color: Int) {
@@ -78,13 +92,10 @@ class MyFloatingActionButton : FloatingActionButton, View.OnClickListener, Prope
         }
     }
 
-    override fun propertyChange(pce: PropertyChangeEvent?) {
-        pce ?: return
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
 
-        if (pce.propertyName == Country.PROPERTY_CURRENT_CENTER) {
-            isFocusedOnCountry = false
-            currentCountry = pce.source as Country
-        }
+        compositeDisposable.clear()
     }
 
 }

@@ -4,8 +4,6 @@ import android.content.Context
 import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
 import android.os.Build
-import android.os.Handler
-import android.os.Looper
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory
 import android.util.AttributeSet
@@ -14,10 +12,12 @@ import android.view.ViewOutlineProvider
 import android.widget.ImageView
 import com.alex_aladdin.mercatorpuzzle.country.Country
 import com.alex_aladdin.mercatorpuzzle.helpers.dp
-import java.beans.PropertyChangeEvent
-import java.beans.PropertyChangeListener
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 
-class FlagView : ImageView, PropertyChangeListener {
+class FlagView : ImageView {
 
     companion object {
 
@@ -39,22 +39,20 @@ class FlagView : ImageView, PropertyChangeListener {
 
             if (value != null) {
                 val resId = getFlagResById(value.id)
-                Handler(Looper.getMainLooper()).post {
-                    if (resId != null) {
-                        val drawable = getRoundedDrawable(resId)
-                        this@FlagView.background = drawable
-                    }
-                    else {
-                        this@FlagView.background = null
-                    }
+                if (resId != null) {
+                    val drawable = getRoundedDrawable(resId)
+                    this@FlagView.background = drawable
                 }
-            }
-            else {
-                Handler(Looper.getMainLooper()).post {
+                else {
                     this@FlagView.background = null
                 }
             }
+            else {
+                this@FlagView.background = null
+            }
         }
+
+    private val compositeDisposable = CompositeDisposable()
 
     init {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -63,12 +61,14 @@ class FlagView : ImageView, PropertyChangeListener {
         }
     }
 
-    override fun propertyChange(pce: PropertyChangeEvent?) {
-        pce ?: return
+    fun subscribeOn(observable: Observable<Country>) {
+        val disposable: Disposable = observable
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe { country ->
+                    currentCountry = country
+                }
 
-        if (pce.propertyName == Country.PROPERTY_CURRENT_CENTER) {
-            currentCountry = pce.source as Country
-        }
+        compositeDisposable.add(disposable)
     }
 
     private fun getFlagResById(id: String): Int? {
@@ -88,6 +88,12 @@ class FlagView : ImageView, PropertyChangeListener {
         val drawable: RoundedBitmapDrawable = RoundedBitmapDrawableFactory.create(context.resources, bitmap)
         drawable.cornerRadius = 8f.dp
         return drawable
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+
+        compositeDisposable.clear()
     }
 
 }
