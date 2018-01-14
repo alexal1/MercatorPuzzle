@@ -44,6 +44,12 @@ class TopBarView : RelativeLayout {
         }
     }
 
+    var topMargin = 0
+        set(value) {
+            field = value
+            (this@TopBarView.layoutParams as MarginLayoutParams).topMargin = topMargin
+        }
+
     var currentCountry: Country? = null
         set(value) {
             field = value
@@ -100,6 +106,7 @@ class TopBarView : RelativeLayout {
                         LayoutParams.MATCH_PARENT,
                         LayoutParams.WRAP_CONTENT
                 )
+                (this@TopBarView.layoutParams as MarginLayoutParams).topMargin = topMargin
                 flagView.layoutParams = RelativeLayout.LayoutParams(
                         LayoutParams.WRAP_CONTENT,
                         LayoutParams.WRAP_CONTENT
@@ -114,6 +121,7 @@ class TopBarView : RelativeLayout {
                         LayoutParams.MATCH_PARENT,
                         resources.getDimension(R.dimen.top_bar_view_height).toInt()
                 )
+                (this@TopBarView.layoutParams as MarginLayoutParams).topMargin = topMargin
                 flagView.layoutParams = RelativeLayout.LayoutParams(
                         LayoutParams.WRAP_CONTENT,
                         LayoutParams.MATCH_PARENT
