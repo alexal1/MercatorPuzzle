@@ -17,6 +17,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <com.alex_aladdin.mercatorpuzzle.custom_views.TopBarView
+        android:id="@+id/topBarView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
     <com.alex_aladdin.mercatorpuzzle.custom_views.MyFloatingActionButton
         android:id="@+id/myFloatingActionButton"
         android:layout_width="wrap_content"
@@ -31,13 +36,5 @@
         app:fabSize="auto"
         app:elevation="4dp"
         app:pressedTranslationZ="8dp" />
-
-    <com.alex_aladdin.mercatorpuzzle.custom_views.FlagView
-        android:id="@+id/flagView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_margin="16dp" />
 
 </RelativeLayout>

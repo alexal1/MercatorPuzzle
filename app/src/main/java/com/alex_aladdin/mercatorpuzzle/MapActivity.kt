@@ -101,7 +101,10 @@ class MapActivity : AppCompatActivity() {
     private fun setListeners() {
         myFloatingActionButton.setOnClickListener {
             myFloatingActionButton.currentCountry?.let { focusCameraOn(it) }
-            flagView.currentCountry = null
+            // Clear TopBarView's currentCountry if we've focused on another Country
+            if (myFloatingActionButton.currentCountry != topBarView.currentCountry) {
+                topBarView.currentCountry = null
+            }
         }
     }
 
@@ -205,7 +208,7 @@ class MapActivity : AppCompatActivity() {
             country.color = MercatorApp.obtainColor()
             MercatorApp.shownCountries.add(country)
             myFloatingActionButton.subscribeOn(country.currentCenterObservable)
-            flagView.subscribeOn(country.currentCenterObservable)
+            topBarView.subscribeOn(country.currentCenterObservable)
         }
         myFloatingActionButton.currentCountry = MercatorApp.shownCountries.firstOrNull()
         mySurfaceView.showCountries(MercatorApp.shownCountries)

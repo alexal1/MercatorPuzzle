@@ -12,10 +12,6 @@ import android.view.ViewOutlineProvider
 import android.widget.ImageView
 import com.alex_aladdin.mercatorpuzzle.country.Country
 import com.alex_aladdin.mercatorpuzzle.helpers.dp
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
 
 class FlagView : ImageView {
 
@@ -52,23 +48,11 @@ class FlagView : ImageView {
             }
         }
 
-    private val compositeDisposable = CompositeDisposable()
-
     init {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             this@FlagView.outlineProvider = ViewOutlineProvider.BACKGROUND
             this@FlagView.translationZ = 8f.dp
         }
-    }
-
-    fun subscribeOn(observable: Observable<Country>) {
-        val disposable: Disposable = observable
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { country ->
-                    currentCountry = country
-                }
-
-        compositeDisposable.add(disposable)
     }
 
     private fun getFlagResById(id: String): Int? {
@@ -90,10 +74,19 @@ class FlagView : ImageView {
         return drawable
     }
 
-    override fun onDetachedFromWindow() {
-        super.onDetachedFromWindow()
-
-        compositeDisposable.clear()
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        // Preserve flag's ratio when measuring this View
+        this@FlagView.background
+                ?.let { drawable ->
+                    val ratio = drawable.intrinsicWidth.toFloat() / drawable.intrinsicHeight.toFloat()
+                    val h = MeasureSpec.getSize(heightMeasureSpec)
+                    val w = h * ratio
+                    val widthMeasureSpec2 = MeasureSpec.makeMeasureSpec(w.toInt(), MeasureSpec.AT_MOST)
+                    super.onMeasure(widthMeasureSpec2, heightMeasureSpec)
+                }
+                ?: let {
+                    super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+                }
     }
 
 }
