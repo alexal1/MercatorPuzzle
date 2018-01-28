@@ -2,6 +2,7 @@ package com.alex_aladdin.mercatorpuzzle.country
 
 import android.graphics.Color
 import com.alex_aladdin.google_maps_utils.PolyUtil
+import com.alex_aladdin.google_maps_utils.SphericalUtil
 import com.mapbox.mapboxsdk.geometry.LatLng
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
@@ -19,10 +20,12 @@ class Country(var vertices: ArrayList<ArrayList<LatLng>>, val id: String, val na
         set(value) {
             latitudeBoundaries.check(value)
             updateVertices(value)
+            updateDistanceToTarget(value)
             field = value
             currentCenterSubject.onNext(this@Country)
         }
     var color: Int = Color.TRANSPARENT
+    var distanceToTarget = 0.0
 
     private val relativeVertices = RelativeVertices(center = targetCenter, coordinates = vertices)
     private val latitudeBoundaries = LatitudeBoundaries(center = targetCenter, coordinates = vertices)
@@ -36,6 +39,13 @@ class Country(var vertices: ArrayList<ArrayList<LatLng>>, val id: String, val na
      */
     private fun updateVertices(newCenter: LatLng) {
         vertices = relativeVertices.computeAbsoluteCoordinates(newCenter = newCenter)
+    }
+
+    /**
+     * Update rhumb distance from the current center to the target center.
+     */
+    private fun updateDistanceToTarget(newCenter: LatLng) {
+        distanceToTarget = SphericalUtil.rhumbDistance(newCenter, targetCenter)
     }
 
     fun getRect(): CountryRect {

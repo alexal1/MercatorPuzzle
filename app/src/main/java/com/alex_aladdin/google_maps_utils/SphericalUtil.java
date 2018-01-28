@@ -26,6 +26,7 @@ import static java.lang.Math.abs;
 import static java.lang.Math.asin;
 import static java.lang.Math.atan2;
 import static java.lang.Math.cos;
+import static java.lang.Math.log;
 import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
 import static java.lang.Math.tan;
@@ -157,6 +158,29 @@ public class SphericalUtil {
         double lat = atan2(z, sqrt(x * x + y * y));
         double lng = atan2(y, x);
         return new LatLng(toDegrees(lat), toDegrees(lng));
+    }
+
+    /**
+     * Returns the distance travelling from one point to another along a rhumb line (in meters).
+     *
+     * https://www.movable-type.co.uk/scripts/latlong.html
+     */
+    public static double rhumbDistance(LatLng from, LatLng to) {
+        double φ1 = toRadians(from.getLatitude()), φ2 = toRadians(to.getLatitude());
+        double Δφ = φ2 - φ1;
+        double Δλ = toRadians(abs(from.getLongitude() - to.getLongitude()));
+        // if dLon over 180° take shorter rhumb line across the anti-meridian:
+        if (Δλ > PI) Δλ -= 2 * PI;
+
+        // on Mercator projection, longitude distances shrink by latitude; q is the 'stretch factor'
+        // q becomes ill-conditioned along E-W line (0/0); use empirical tolerance to avoid it
+        double Δψ = log(tan(φ2 / 2 + PI / 4) / tan(φ1 / 2 + PI / 4));
+        double q = abs(Δψ) > 10e-12 ? Δφ/Δψ : Math.cos(φ1);
+
+        // distance is pythagoras on 'stretched' Mercator projection
+        double δ = sqrt(Δφ * Δφ + q * q * Δλ * Δλ); // angular distance in radians
+
+        return δ * EARTH_RADIUS;
     }
 
     /**
