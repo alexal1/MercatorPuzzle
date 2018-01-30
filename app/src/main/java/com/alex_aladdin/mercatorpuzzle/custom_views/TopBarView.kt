@@ -17,8 +17,15 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.top_bar_view.view.*
+import kotlin.math.min
 
 class TopBarView : RelativeLayout {
+
+    companion object {
+
+        private const val E = 1.0 / 3.0 // initial distance enlargement coefficient
+
+    }
 
     constructor(context: Context) : super(context)
 
@@ -30,18 +37,13 @@ class TopBarView : RelativeLayout {
 
     private val compositeDisposable = CompositeDisposable()
     private var currentType = BarType.FLAG
+    private var initialDistanceToTarget = 0.0
+    private val normalizedDistance: Double get() =
+        min(currentCountry?.distanceToTarget?.div(initialDistanceToTarget) ?: 0.0, 1.0)
 
     init {
         inflate(context, R.layout.top_bar_view, this@TopBarView)
         setBarType(BarType.FLAG)
-        setOnClickListener {
-            if (currentType == BarType.FLAG) {
-                setBarType(BarType.FLAG_AND_NAME)
-            }
-            else {
-                setBarType(BarType.FLAG)
-            }
-        }
     }
 
     var topMargin = 0
@@ -52,14 +54,41 @@ class TopBarView : RelativeLayout {
 
     var currentCountry: Country? = null
         set(value) {
+            if (value != field) {
+                initialDistanceToTarget = value?.distanceToTarget?.times(1.0 + E) ?: 0.0
+                flagView.countryId = value?.id
+                textName.text = value?.name ?: ""
+            }
+
             field = value
 
             if (value == null) {
                 setBarType(BarType.FLAG)
+                if (flagView.blurRadius != 0f) {
+                    flagView.blurRadius = 0f
+                }
+                return
             }
 
-            flagView.currentCountry = value
-            textName.text = value?.name ?: ""
+            val nd = normalizedDistance
+            when (nd) {
+                in 0.5..1.0 -> {
+                    if (currentType != BarType.FLAG) {
+                        setBarType(BarType.FLAG)
+                    }
+                    val br = 2 * FlagView.MAX_BLUR_RADIUS * nd - FlagView.MAX_BLUR_RADIUS
+                    flagView.blurRadius = br.toFloat()
+                }
+
+                in 0.0..0.5 -> {
+                    if (currentType != BarType.FLAG_AND_NAME) {
+                        setBarType(BarType.FLAG_AND_NAME)
+                    }
+                    if (flagView.blurRadius != 0f) {
+                        flagView.blurRadius = 0f
+                    }
+                }
+            }
         }
 
     fun subscribeOn(observable: Observable<Country>) {

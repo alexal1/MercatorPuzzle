@@ -15,6 +15,7 @@ import android.view.SurfaceView
 import com.alex_aladdin.google_maps_utils.PolyUtil
 import com.alex_aladdin.mercatorpuzzle.MapActivity
 import com.alex_aladdin.mercatorpuzzle.MercatorApp
+import com.alex_aladdin.mercatorpuzzle.R
 import com.alex_aladdin.mercatorpuzzle.animators.CountriesAnimator
 import com.alex_aladdin.mercatorpuzzle.animators.MoveCountriesAnimator
 import com.alex_aladdin.mercatorpuzzle.animators.ScaleCountriesAnimator
@@ -22,7 +23,6 @@ import com.alex_aladdin.mercatorpuzzle.country.Country
 import com.alex_aladdin.mercatorpuzzle.draw_threads.DrawThread
 import com.alex_aladdin.mercatorpuzzle.draw_threads.MoveDrawThread
 import com.alex_aladdin.mercatorpuzzle.draw_threads.ScaleDrawThread
-import com.alex_aladdin.mercatorpuzzle.helpers.mm
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapboxMap
 
@@ -40,7 +40,6 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
     companion object {
 
         const val TAG = "MercatorMySurfaceView"
-        const val TOUCH_AREA = 10f // mm
 
     }
 
@@ -48,7 +47,7 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
     var dragInProcess: Boolean = false
     var countriesAnimator: CountriesAnimator? = null
 
-    private val halfTouchSide = TOUCH_AREA.mm / 2
+    private val halfTouchSide = resources.getDimension(R.dimen.my_surface_view_touch_side) / 2
     private var drawThread: DrawThread? = null
     private var currentCountry: Country? = null
 

@@ -2,4 +2,6 @@
 <resources>
     <dimen name="top_bar_view_height">56dp</dimen>
     <dimen name="top_bar_view_inner_margin">16dp</dimen>
+    <dimen name="flag_view_corners_radius">8dp</dimen>
+    <dimen name="my_surface_view_touch_side">10mm</dimen>
 </resources>
