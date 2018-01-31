@@ -16,8 +16,8 @@
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/top_bar_view_inner_margin" />
 
-    <TextView
-        android:id="@+id/textName"
+    <com.alex_aladdin.mercatorpuzzle.custom_views.NameView
+        android:id="@+id/nameView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_toRightOf="@id/flagView"

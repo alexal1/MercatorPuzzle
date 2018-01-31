@@ -57,7 +57,7 @@ class TopBarView : RelativeLayout {
             if (value != field) {
                 initialDistanceToTarget = value?.distanceToTarget?.times(1.0 + E) ?: 0.0
                 flagView.countryId = value?.id
-                textName.text = value?.name ?: ""
+                nameView.countryName = value?.name ?: ""
             }
 
             field = value
@@ -67,6 +67,9 @@ class TopBarView : RelativeLayout {
                 if (flagView.blurRadius != 0f) {
                     flagView.blurRadius = 0f
                 }
+                if (nameView.completeness != 0f) {
+                    nameView.completeness = 0f
+                }
                 return
             }
 
@@ -75,6 +78,9 @@ class TopBarView : RelativeLayout {
                 in 0.5..1.0 -> {
                     if (currentType != BarType.FLAG) {
                         setBarType(BarType.FLAG)
+                    }
+                    if (nameView.completeness != 0f) {
+                        nameView.completeness = 0f
                     }
                     val br = 2 * FlagView.MAX_BLUR_RADIUS * nd - FlagView.MAX_BLUR_RADIUS
                     flagView.blurRadius = br.toFloat()
@@ -87,6 +93,8 @@ class TopBarView : RelativeLayout {
                     if (flagView.blurRadius != 0f) {
                         flagView.blurRadius = 0f
                     }
+                    val c = 1.0 - 2 * nd
+                    nameView.completeness = c.toFloat()
                 }
             }
         }
@@ -113,7 +121,7 @@ class TopBarView : RelativeLayout {
         transitionFlag.addTarget(flagView)
 
         val transitionName = if (type == BarType.FLAG) Fade(OUT) else Fade(IN)
-        transitionName.addTarget(textName)
+        transitionName.addTarget(nameView)
 
         val transitionBackground = if (type == BarType.FLAG) Fade(OUT) else Fade(IN)
         transitionBackground.addTarget(imageBackground)
@@ -141,7 +149,7 @@ class TopBarView : RelativeLayout {
                         LayoutParams.WRAP_CONTENT
                 )
                 (flagView.layoutParams as RelativeLayout.LayoutParams).addRule(CENTER_HORIZONTAL)
-                textName.visibility = View.GONE
+                nameView.visibility = View.GONE
                 imageBackground.visibility = View.GONE
             }
 
@@ -155,7 +163,7 @@ class TopBarView : RelativeLayout {
                         LayoutParams.WRAP_CONTENT,
                         LayoutParams.MATCH_PARENT
                 )
-                textName.visibility = View.VISIBLE
+                nameView.visibility = View.VISIBLE
                 imageBackground.visibility = View.VISIBLE
             }
         }
