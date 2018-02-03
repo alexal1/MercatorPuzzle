@@ -25,7 +25,7 @@ class MapActivity : AppCompatActivity() {
 
     companion object {
 
-        val TAG = "MercatorMapActivity"
+        const val TAG = "MercatorMapActivity"
 
         private val polygonsOnMap = HashMap<Country, ArrayList<Polygon>>()
 
@@ -172,6 +172,16 @@ class MapActivity : AppCompatActivity() {
     }
 
     /**
+     * Redraw given countries in an order that fixed countries are on bottom.
+     */
+    fun redrawCountries(countries: List<Country>) {
+        countries.forEach { removePolygons(it) }
+        val (fixed, notFixed) = countries.partition { it.isFixed }
+        fixed.forEach { drawCountry(it) }
+        notFixed.forEach { drawCountry(it) }
+    }
+
+    /**
      * Move camera close to the given country.
      */
     private fun focusCameraOn(country: Country) {
@@ -208,7 +218,7 @@ class MapActivity : AppCompatActivity() {
         MercatorApp.shownCountries.forEach { removePolygons(it) }
         MercatorApp.shownCountries.clear()
         for (country in MercatorApp.loadedCountries) {
-            country.color = MercatorApp.obtainColor()
+            country.color = if (country.isFixed) MercatorApp.countryFixedColor else MercatorApp.obtainColor()
             MercatorApp.shownCountries.add(country)
             myFloatingActionButton.subscribeOn(country.currentCenterObservable)
             topBarView.subscribeOn(country.currentCenterObservable)

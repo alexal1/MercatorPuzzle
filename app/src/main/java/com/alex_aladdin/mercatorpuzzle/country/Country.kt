@@ -3,6 +3,7 @@ package com.alex_aladdin.mercatorpuzzle.country
 import android.graphics.Color
 import com.alex_aladdin.google_maps_utils.PolyUtil
 import com.alex_aladdin.google_maps_utils.SphericalUtil
+import com.alex_aladdin.mercatorpuzzle.MercatorApp
 import com.mapbox.mapboxsdk.geometry.LatLng
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
@@ -26,6 +27,12 @@ class Country(var vertices: ArrayList<ArrayList<LatLng>>, val id: String, val na
         }
     var color: Int = Color.TRANSPARENT
     var distanceToTarget = 0.0
+    var isFixed = false
+        set(value) {
+            field = value
+            color = MercatorApp.countryFixedColor
+            currentCenterSubject.onComplete()
+        }
 
     private val relativeVertices = RelativeVertices(center = targetCenter, coordinates = vertices)
     private val latitudeBoundaries = LatitudeBoundaries(center = targetCenter, coordinates = vertices)
@@ -98,6 +105,13 @@ class Country(var vertices: ArrayList<ArrayList<LatLng>>, val id: String, val na
      * Check if country contains given point or not.
      */
     fun contains(latLng: LatLng): Boolean = vertices.any { polygon -> PolyUtil.containsLocation(latLng, polygon, false) }
+
+    /**
+     * Check if this and given countries are both covering some Earth's area.
+     * It is a quite time-consuming function that should be used rarely.
+     */
+    fun intersects(c: Country): Boolean = vertices.flatten().any { vertex -> c.contains(vertex) }
+            || c.vertices.flatten().any { vertex -> contains(vertex) }
 
     /**
      * Check if Country's currentCenter is close enough to the targetCenter.

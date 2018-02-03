@@ -5,6 +5,7 @@ import android.content.res.ColorStateList
 import android.support.design.widget.FloatingActionButton
 import android.support.v4.content.ContextCompat
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import com.alex_aladdin.mercatorpuzzle.MercatorApp
 import com.alex_aladdin.mercatorpuzzle.R
@@ -13,11 +14,13 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
+import io.reactivex.rxkotlin.subscribeBy
 
 class MyFloatingActionButton : FloatingActionButton, View.OnClickListener {
 
     companion object {
 
+        const val TAG = "MercatorMyFAB"
         private val defaultColor = ContextCompat.getColor(MercatorApp.applicationContext, R.color.country_fixed)
 
     }
@@ -55,16 +58,38 @@ class MyFloatingActionButton : FloatingActionButton, View.OnClickListener {
     fun subscribeOn(observable: Observable<Country>) {
         val disposable: Disposable = observable
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { country ->
-                    isFocusedOnCountry = false
-                    currentCountry = country
-                }
+                .subscribeBy(
+                        onNext = { country ->
+                            isFocusedOnCountry = false
+                            currentCountry = country
+                        },
+                        onComplete = {
+                            isFocusedOnCountry = false
+                            currentCountry = getNextCountry(null)
+                        },
+                        onError = { e ->
+                            Log.e(TAG, "subscribeOn():", e)
+                        }
+                )
 
         compositeDisposable.add(disposable)
     }
 
     private fun setColor(color: Int) {
         this@MyFloatingActionButton.backgroundTintList = ColorStateList.valueOf(color)
+    }
+
+    private fun getNextCountry(country: Country?): Country? {
+        val availableCountries = MercatorApp.shownCountries.filter { !it.isFixed }
+        var index = availableCountries.indexOf(country)
+        return when {
+            index >= 0 -> {
+                index = (index + 1) % availableCountries.size
+                availableCountries[index]
+            }
+            availableCountries.isNotEmpty() -> availableCountries[0]
+            else -> null
+        }
     }
 
     override fun setOnClickListener(listener: OnClickListener?) {
@@ -82,11 +107,7 @@ class MyFloatingActionButton : FloatingActionButton, View.OnClickListener {
             }
             else {
                 isFocusedOnCountry = false
-                var index = MercatorApp.shownCountries.indexOf(country)
-                if (index >= 0) {
-                    index = (index + 1) % MercatorApp.shownCountries.size
-                    currentCountry = MercatorApp.shownCountries[index]
-                }
+                currentCountry = getNextCountry(country)
                 callOnClick()
             }
         }

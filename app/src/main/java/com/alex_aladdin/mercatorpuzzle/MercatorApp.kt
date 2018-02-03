@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.PointF
+import android.support.v4.content.ContextCompat
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.WindowManager
@@ -25,6 +26,7 @@ class MercatorApp : Application() {
 
         val loadedCountries = ArrayList<Country>()
         val shownCountries = ArrayList<Country>()
+        val countryFixedColor by lazy { ContextCompat.getColor(MercatorApp.applicationContext, R.color.country_fixed) }
 
         private lateinit var countryColors: IntArray
         private val random = Random()

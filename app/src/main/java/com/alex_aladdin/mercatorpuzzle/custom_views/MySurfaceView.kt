@@ -123,9 +123,18 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
 
                     // Operations to do either immediately or after animation finishes
                     fun doFinally() {
-                        currentCountry?.let {
+                        currentCountry?.let { country ->
                             Handler(Looper.getMainLooper()).post {
-                                (context as MapActivity).drawCountry(it)
+                                if (!country.isFixed) {
+                                    (context as MapActivity).drawCountry(country)
+                                }
+                                else {
+                                    val countriesToRedraw = MercatorApp.shownCountries
+                                            .filter { !it.isFixed && it.intersects(country) }
+                                            .plus(country)
+                                    (context as MapActivity).redrawCountries(countriesToRedraw)
+                                    clearCanvas()
+                                }
                             }
                         }
                     }
@@ -136,6 +145,7 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
                             countriesAnimator?.animate {
                                 moveDrawThread.stopDrawingInTargetPos = true
                                 drawThread = null
+                                currentCountry?.isFixed = true
                                 doFinally()
                             }
                         }
@@ -226,7 +236,11 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
             })
         }
 
-        MercatorApp.shownCountries.forEach { country ->
+        for (country in MercatorApp.shownCountries) {
+            if (country.isFixed) {
+                continue
+            }
+
             if (country.contains(touchLatLng)) {
                 return@findTouchedCountry country
             }
