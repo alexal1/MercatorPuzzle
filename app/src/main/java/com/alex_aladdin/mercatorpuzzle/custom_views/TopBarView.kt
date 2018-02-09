@@ -8,6 +8,7 @@ import android.support.transition.Fade.OUT
 import android.support.transition.TransitionManager
 import android.support.transition.TransitionSet
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import android.widget.RelativeLayout
 import com.alex_aladdin.mercatorpuzzle.R
@@ -16,15 +17,24 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
+import io.reactivex.rxkotlin.subscribeBy
 import kotlinx.android.synthetic.main.top_bar_view.view.*
+import java.lang.Math.pow
+import kotlin.math.ceil
 import kotlin.math.min
 
 class TopBarView : RelativeLayout {
 
     companion object {
 
+        const val TAG = "MercatorTopBarView"
         private const val E = 1.0 / 3.0 // initial distance enlargement coefficient
-
+        private const val AREA_MIN = 6.207619853456295E9    // Cyprus
+        private const val AREA_MID = 9.981311725489886E11   // Egypt
+        private const val AREA_MAX = 1.6895055366061375E13  // Russia
+        private const val COINS_MIN = 1.0
+        private const val COINS_MID = 50.0
+        private const val COINS_MAX = 100.0
     }
 
     constructor(context: Context) : super(context)
@@ -58,6 +68,7 @@ class TopBarView : RelativeLayout {
                 initialDistanceToTarget = value?.distanceToTarget?.times(1.0 + E) ?: 0.0
                 flagView.countryId = value?.id
                 nameView.countryName = value?.name ?: ""
+                coinsCounterView.visibility = View.GONE
             }
 
             field = value
@@ -102,9 +113,21 @@ class TopBarView : RelativeLayout {
     fun subscribeOn(observable: Observable<Country>) {
         val disposable: Disposable = observable
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { country ->
-                    currentCountry = country
-                }
+                .subscribeBy(
+                        onNext = { country ->
+                            currentCountry = country
+                        },
+                        onComplete = {
+                            currentCountry?.let { country ->
+                                coinsCounterView.visibility = View.VISIBLE
+                                val amount = getCoinsByArea(country.area)
+                                coinsCounterView.showIncome(amount)
+                            }
+                        },
+                        onError = { e ->
+                            Log.e(TAG, "subscribeOn():", e)
+                        }
+                )
 
         compositeDisposable.add(disposable)
     }
@@ -167,8 +190,22 @@ class TopBarView : RelativeLayout {
                 imageBackground.visibility = View.VISIBLE
             }
         }
-        val margin = resources.getDimension(R.dimen.top_bar_view_inner_margin).toInt()
+        val margin = resources.getDimension(R.dimen.top_bar_view_flag_margin).toInt()
         (flagView.layoutParams as MarginLayoutParams).setMargins(margin, margin, 0, margin)
+    }
+
+    private fun getCoinsByArea(area: Double): Int {
+        var coins = when {
+            area <= AREA_MIN -> COINS_MAX
+            area in AREA_MIN..AREA_MID ->
+                (COINS_MAX - COINS_MID) * pow(area - AREA_MID, 4.0) / pow(AREA_MIN - AREA_MID, 4.0) + COINS_MID
+            area in AREA_MID..AREA_MAX ->
+                (COINS_MID - COINS_MIN) * pow(area - AREA_MAX, 2.0) / pow(AREA_MID - AREA_MAX, 2.0) + COINS_MIN
+            area >= AREA_MAX -> COINS_MIN
+            else -> throw IllegalArgumentException("Unexpected area")
+        }
+        coins = ceil(coins)
+        return coins.toInt()
     }
 
     override fun onDetachedFromWindow() {

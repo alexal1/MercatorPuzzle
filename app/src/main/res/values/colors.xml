@@ -9,6 +9,7 @@
     <color name="grey60">#99000000</color>
     <color name="transparent">#00000000</color>
     <color name="country_fixed">#B9C9CA</color>
+    <color name="gold">#FFDA44</color>
 
     <array name="country_colors">
         <item>#5BC44C</item>

@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="top_bar_view_height">56dp</dimen>
-    <dimen name="top_bar_view_inner_margin">16dp</dimen>
+    <dimen name="top_bar_view_flag_margin">16dp</dimen>
+    <dimen name="top_bar_view_name_margin">96dp</dimen>
+    <dimen name="top_bar_view_coins_counter_margin">16dp</dimen>
+    <dimen name="top_bar_view_font_size">16sp</dimen>
     <dimen name="flag_view_corners_radius">8dp</dimen>
     <dimen name="my_surface_view_touch_side">10mm</dimen>
     <dimen name="name_view_glow_radius">8dp</dimen>
+    <dimen name="coins_counter_view_glow_radius">8dp</dimen>
 </resources>

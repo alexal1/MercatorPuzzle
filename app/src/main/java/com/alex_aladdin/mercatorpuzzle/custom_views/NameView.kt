@@ -2,7 +2,9 @@ package com.alex_aladdin.mercatorpuzzle.custom_views
 
 import android.content.Context
 import android.graphics.Color
+import android.support.v4.widget.TextViewCompat
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.widget.TextView
 import com.alex_aladdin.mercatorpuzzle.R
 import java.lang.Math.round
@@ -45,6 +47,16 @@ class NameView : TextView {
 
             glow(wordLength == length)
         }
+
+    init {
+        TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                this@NameView,
+                1,
+                resources.getDimension(R.dimen.top_bar_view_font_size).toInt(),
+                1,
+                TypedValue.COMPLEX_UNIT_PX
+        )
+    }
 
     private fun glow(on: Boolean) {
         if (on) {

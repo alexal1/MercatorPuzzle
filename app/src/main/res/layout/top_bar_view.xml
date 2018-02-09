@@ -14,24 +14,38 @@
         android:id="@+id/flagView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/top_bar_view_inner_margin" />
+        android:layout_marginLeft="@dimen/top_bar_view_flag_margin"
+        android:layout_marginStart="@dimen/top_bar_view_flag_margin" />
 
     <com.alex_aladdin.mercatorpuzzle.custom_views.NameView
         android:id="@+id/nameView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_toRightOf="@id/flagView"
-        android:layout_toEndOf="@id/flagView"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginLeft="@dimen/top_bar_view_inner_margin"
-        android:layout_marginStart="@dimen/top_bar_view_inner_margin"
-        android:layout_marginRight="@dimen/top_bar_view_inner_margin"
-        android:layout_marginEnd="@dimen/top_bar_view_inner_margin"
+        android:layout_marginLeft="@dimen/top_bar_view_name_margin"
+        android:layout_marginStart="@dimen/top_bar_view_name_margin"
+        android:layout_marginRight="@dimen/top_bar_view_name_margin"
+        android:layout_marginEnd="@dimen/top_bar_view_name_margin"
         android:gravity="center"
         android:textColor="@color/white"
         android:textStyle="bold"
-        android:textSize="16sp"
-        android:textAllCaps="true"/>
+        android:textSize="@dimen/top_bar_view_font_size"
+        android:textAllCaps="true"
+        android:maxLines="2" />
+
+    <com.alex_aladdin.mercatorpuzzle.custom_views.CoinsCounterView
+        android:id="@+id/coinsCounterView"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginRight="@dimen/top_bar_view_coins_counter_margin"
+        android:layout_marginEnd="@dimen/top_bar_view_coins_counter_margin"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:gravity="center_vertical"
+        android:textColor="@color/white"
+        android:textSize="@dimen/top_bar_view_font_size"
+        android:drawablePadding="2dp"
+        android:drawableRight="@drawable/coin_stack_white"
+        android:drawableEnd="@drawable/coin_stack_white"
+        android:visibility="gone" />
 
 </merge>

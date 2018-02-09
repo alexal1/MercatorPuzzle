@@ -33,6 +33,7 @@ class Country(var vertices: ArrayList<ArrayList<LatLng>>, val id: String, val na
             color = MercatorApp.countryFixedColor
             currentCenterSubject.onComplete()
         }
+    val area = vertices.sumByDouble { polygon -> SphericalUtil.computeArea(polygon) }
 
     private val relativeVertices = RelativeVertices(center = targetCenter, coordinates = vertices)
     private val latitudeBoundaries = LatitudeBoundaries(center = targetCenter, coordinates = vertices)
