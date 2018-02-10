@@ -5,6 +5,7 @@ import android.graphics.PointF
 import android.os.Build
 import android.os.Bundle
 import android.support.v4.content.ContextCompat
+import android.support.v4.view.GravityCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.MotionEvent
@@ -54,6 +55,7 @@ class MapActivity : AppCompatActivity() {
         initMap()
 
         setListeners()
+        setMenu()
 
         mySurfaceView.setZOrderMediaOverlay(true)               // Show MySurfaceView above MapView
         mySurfaceView.holder.setFormat(PixelFormat.TRANSPARENT) // Make MySurfaceView transparent
@@ -98,9 +100,6 @@ class MapActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Set listeners for all controls.
-     */
     private fun setListeners() {
         myFloatingActionButton.setOnClickListener {
             myFloatingActionButton.currentCountry?.let { focusCameraOn(it) }
@@ -108,6 +107,27 @@ class MapActivity : AppCompatActivity() {
             if (myFloatingActionButton.currentCountry != topBarView.currentCountry) {
                 topBarView.currentCountry = null
             }
+        }
+    }
+
+    private fun setMenu() {
+        navigationView.itemIconTintList = null
+        navigationView.setNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_new_game -> {
+                    // TODO: do something
+                }
+
+                R.id.nav_results -> {
+                    // TODO: do something
+                }
+
+                R.id.nav_feedback -> {
+                    // TODO: do something
+                }
+            }
+            layoutDrawer.closeDrawer(GravityCompat.START)
+            true
         }
     }
 

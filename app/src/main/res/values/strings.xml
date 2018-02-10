@@ -1,4 +1,8 @@
-<resources>
-    <string name="app_name">Mercator Puzzle</string>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="app_name" tools:override="true">Mercator Puzzle</string>
     <string name="mapbox_access_token">pk.eyJ1IjoiYWxleGFsMSIsImEiOiJjajJoenhoNHUwMDFwMnduc3BwcnZnaXM5In0.R5AyIbwsSA16udnbOzVzfQ</string>
+    
+    <string name="menu_new_game">New game</string>
+    <string name="menu_results">My results</string>
+    <string name="menu_feedback">Give feedback</string>
 </resources>
