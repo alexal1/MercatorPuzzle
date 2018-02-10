@@ -13,6 +13,7 @@ import android.view.View
 import com.alex_aladdin.mercatorpuzzle.country.CountriesDisposition
 import com.alex_aladdin.mercatorpuzzle.country.Country
 import com.alex_aladdin.mercatorpuzzle.country.LatitudeBoundaries
+import com.alex_aladdin.mercatorpuzzle.data.GeoJsonParser
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.annotations.Polygon
 import com.mapbox.mapboxsdk.annotations.PolygonOptions

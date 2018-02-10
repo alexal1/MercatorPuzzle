@@ -1,7 +1,8 @@
-package com.alex_aladdin.mercatorpuzzle
+package com.alex_aladdin.mercatorpuzzle.data
 
 import android.os.AsyncTask
 import android.util.Log
+import com.alex_aladdin.mercatorpuzzle.MercatorApp
 import com.alex_aladdin.mercatorpuzzle.country.Country
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
