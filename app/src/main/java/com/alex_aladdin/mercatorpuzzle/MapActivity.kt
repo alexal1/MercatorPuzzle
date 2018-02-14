@@ -1,5 +1,6 @@
 package com.alex_aladdin.mercatorpuzzle
 
+import android.content.BroadcastReceiver
 import android.graphics.PixelFormat
 import android.graphics.PointF
 import android.os.Build
@@ -13,11 +14,12 @@ import android.view.View
 import com.alex_aladdin.mercatorpuzzle.country.CountriesDisposition
 import com.alex_aladdin.mercatorpuzzle.country.Country
 import com.alex_aladdin.mercatorpuzzle.country.LatitudeBoundaries
+import com.alex_aladdin.mercatorpuzzle.data.Continents
 import com.alex_aladdin.mercatorpuzzle.data.GeoJsonParser
 import com.mapbox.mapboxsdk.Mapbox
-import com.mapbox.mapboxsdk.annotations.Polygon
-import com.mapbox.mapboxsdk.annotations.PolygonOptions
+import com.mapbox.mapboxsdk.annotations.*
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
+import com.mapbox.mapboxsdk.constants.MapboxConstants
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.geometry.LatLngBounds
 import com.mapbox.mapboxsdk.maps.MapboxMap
@@ -30,6 +32,7 @@ class MapActivity : AppCompatActivity() {
         const val TAG = "MercatorMapActivity"
 
         private val polygonsOnMap = HashMap<Country, ArrayList<Polygon>>()
+        private val markersOnMap = HashMap<Marker, Continents>()
 
         /**
          * Remove country from the map.
@@ -44,6 +47,8 @@ class MapActivity : AppCompatActivity() {
 
     private var mapboxMap: MapboxMap? = null
     private var isMultiTouchAfterDrag = false
+    private var newGameReceiver: BroadcastReceiver? = null
+    private var continentChosenReceiver: BroadcastReceiver? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,6 +62,7 @@ class MapActivity : AppCompatActivity() {
 
         setListeners()
         setMenu()
+        registerReceivers()
 
         mySurfaceView.setZOrderMediaOverlay(true)               // Show MySurfaceView above MapView
         mySurfaceView.holder.setFormat(PixelFormat.TRANSPARENT) // Make MySurfaceView transparent
@@ -116,7 +122,7 @@ class MapActivity : AppCompatActivity() {
         navigationView.setNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_new_game -> {
-                    // TODO: do something
+                    MercatorApp.gameController.newGame()
                 }
 
                 R.id.nav_results -> {
@@ -130,6 +136,46 @@ class MapActivity : AppCompatActivity() {
             layoutDrawer.closeDrawer(GravityCompat.START)
             true
         }
+    }
+
+    private fun registerReceivers() {
+        newGameReceiver = MercatorApp.notificationsHelper.registerNewGameReceiver {
+            val mapboxMapNotNull = mapboxMap ?: return@registerNewGameReceiver
+            mapboxMapNotNull.setZoom(MapboxConstants.MINIMUM_ZOOM.toDouble())
+
+            val icon = IconFactory.getInstance(this@MapActivity).fromResource(R.drawable.point)
+            Continents.values().forEach { continent ->
+                val marker = mapboxMapNotNull.addMarker(MarkerOptions()
+                        .position(continent.center)
+                        .icon(icon))
+                markersOnMap[marker] = continent
+            }
+
+            mapboxMapNotNull.setOnMarkerClickListener { marker ->
+                markersOnMap[marker]
+                        ?.let { continent ->
+                            MercatorApp.gameController.chooseContinent(continent)
+                            true
+                        }
+                        ?: false
+            }
+        }
+
+        continentChosenReceiver = MercatorApp.notificationsHelper.registerContinentChosenReceiver { continent ->
+            // Remove all markers
+            markersOnMap.keys.forEach { marker ->
+                mapboxMap?.removeMarker(marker)
+            }
+            markersOnMap.clear()
+
+            // Ease camera
+            focusCameraOn(country = continent.toCountry(), withPadding = false)
+        }
+    }
+
+    private fun unregisterReceivers() {
+        newGameReceiver?.let { MercatorApp.notificationsHelper.unregisterReceiver(it) }
+        continentChosenReceiver?.let { MercatorApp.notificationsHelper.unregisterReceiver(it) }
     }
 
     override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
@@ -205,13 +251,18 @@ class MapActivity : AppCompatActivity() {
     /**
      * Move camera close to the given country.
      */
-    private fun focusCameraOn(country: Country) {
+    private fun focusCameraOn(country: Country, withPadding: Boolean = true) {
         val rect = country.getRect()
         val latLngBounds = LatLngBounds.Builder()
                 .include(LatLng(rect.topLat, rect.rightLng))    // northeast
                 .include(LatLng(rect.bottomLat, rect.leftLng))  // southwest
                 .build()
-        val padding = (maxOf(MercatorApp.screen.x, MercatorApp.screen.y) / 8).toInt()
+
+        val padding = if (withPadding)
+            (maxOf(MercatorApp.screen.x, MercatorApp.screen.y) / 8).toInt()
+        else
+            0
+
         mapboxMap?.easeCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, padding), 1000)
         mySurfaceView.countriesAnimator?.cancel()
         mySurfaceView.clearCanvas()
@@ -298,6 +349,7 @@ class MapActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         mapView.onDestroy()
+        unregisterReceivers()
     }
 
     /**

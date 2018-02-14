@@ -23,6 +23,8 @@ class MercatorApp : Application() {
 
         lateinit var applicationContext: Context private set
         lateinit var screen: PointF private set
+        lateinit var gameController: GameController
+        lateinit var notificationsHelper: NotificationsHelper
 
         val loadedCountries = ArrayList<Country>()
         val shownCountries = ArrayList<Country>()
@@ -62,6 +64,8 @@ class MercatorApp : Application() {
         super.onCreate()
 
         Companion.applicationContext = this.applicationContext
+        Companion.gameController = GameController()
+        Companion.notificationsHelper = NotificationsHelper()
         Companion.countryColors = resources.getIntArray(R.array.country_colors)
 
         getScreenSize()
