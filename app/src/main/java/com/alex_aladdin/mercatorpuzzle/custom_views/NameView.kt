@@ -48,6 +48,8 @@ class NameView : TextView {
             glow(wordLength == length)
         }
 
+    var isGlowEnabled = true
+
     init {
         TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
                 this@NameView,
@@ -59,7 +61,7 @@ class NameView : TextView {
     }
 
     private fun glow(on: Boolean) {
-        if (on) {
+        if (on && isGlowEnabled) {
             this@NameView.setShadowLayer(glowRadius, 0f, 0f, Color.WHITE)
         }
         else {

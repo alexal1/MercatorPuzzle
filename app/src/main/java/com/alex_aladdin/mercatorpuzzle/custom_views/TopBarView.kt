@@ -132,6 +132,30 @@ class TopBarView : RelativeLayout {
         compositeDisposable.add(disposable)
     }
 
+    /**
+     * Use TopBarView as a label. Don't forget to call hideText() after.
+     */
+    fun showText(text: String) {
+        if (currentType != BarType.FLAG_AND_NAME) {
+            setBarType(BarType.FLAG_AND_NAME)
+        }
+
+        flagView.countryId = null
+        nameView.isGlowEnabled = false
+        nameView.countryName = text
+        nameView.completeness = 1f
+        coinsCounterView.visibility = View.GONE
+    }
+
+    /**
+     * Must be called after using TopBarView as a label.
+     */
+    fun hideText() {
+        nameView.countryName = null
+        nameView.isGlowEnabled = true
+        currentCountry = null
+    }
+
     private fun setBarType(type: BarType) {
         currentType = type
 

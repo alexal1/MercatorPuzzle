@@ -5,6 +5,9 @@ import android.graphics.PixelFormat
 import android.graphics.PointF
 import android.os.Build
 import android.os.Bundle
+import android.support.transition.Fade
+import android.support.transition.Fade.IN
+import android.support.transition.TransitionManager
 import android.support.v4.content.ContextCompat
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.AppCompatActivity
@@ -140,9 +143,11 @@ class MapActivity : AppCompatActivity() {
 
     private fun registerReceivers() {
         newGameReceiver = MercatorApp.notificationsHelper.registerNewGameReceiver {
+            // Zoom
             val mapboxMapNotNull = mapboxMap ?: return@registerNewGameReceiver
             mapboxMapNotNull.setZoom(MapboxConstants.MINIMUM_ZOOM.toDouble())
 
+            // Markers
             val icon = IconFactory.getInstance(this@MapActivity).fromResource(R.drawable.point)
             Continents.values().forEach { continent ->
                 val marker = mapboxMapNotNull.addMarker(MarkerOptions()
@@ -151,6 +156,7 @@ class MapActivity : AppCompatActivity() {
                 markersOnMap[marker] = continent
             }
 
+            // Markers listeners
             mapboxMapNotNull.setOnMarkerClickListener { marker ->
                 markersOnMap[marker]
                         ?.let { continent ->
@@ -159,6 +165,12 @@ class MapActivity : AppCompatActivity() {
                         }
                         ?: false
             }
+
+            // Caption
+            topBarView.showText(getString(R.string.top_bar_new_game))
+
+            // FAB visibility
+            myFloatingActionButton.visibility = View.GONE
         }
 
         continentChosenReceiver = MercatorApp.notificationsHelper.registerContinentChosenReceiver { continent ->
@@ -170,6 +182,15 @@ class MapActivity : AppCompatActivity() {
 
             // Ease camera
             focusCameraOn(country = continent.toCountry(), withPadding = false)
+
+            // Remove caption
+            topBarView.hideText()
+
+            // FAB visibility
+            val transitionFAB = Fade(IN)
+            transitionFAB.addTarget(myFloatingActionButton)
+            TransitionManager.beginDelayedTransition(layoutDrawer, transitionFAB)
+            myFloatingActionButton.visibility = View.VISIBLE
         }
     }
 
