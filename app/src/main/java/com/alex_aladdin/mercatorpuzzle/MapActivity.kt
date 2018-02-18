@@ -301,7 +301,7 @@ class MapActivity : AppCompatActivity() {
             )
             CountriesDisposition(viewPort).apply(MercatorApp.loadedCountries)
             onCountriesLoaded()
-        }).execute("RUS", "USA", "CHN", "LKA", "JPN")
+        }).execute(Continents.EUROPE)
     }
 
     /**

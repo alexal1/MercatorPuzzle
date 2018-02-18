@@ -14,32 +14,37 @@ import java.io.IOException
  *
  * @param completion callback function to invoke after task execution
  */
-class GeoJsonParser(val completion: (countries: List<Country>) -> Unit) : AsyncTask<String, Void, List<Country>>() {
+class GeoJsonParser(val completion: (countries: List<Country>) -> Unit) : AsyncTask<Continents, Void, List<Country>>() {
 
-    private val LOG_TAG = "MercatorGeoJsonParser"
+    companion object {
+
+        const val TAG = "MercatorGeoJsonParser"
+        private val excludeList = listOf("ATA")
+
+    }
 
     override fun onPostExecute(result: List<Country>?) {
         super.onPostExecute(result)
 
         if (result == null)
-            Log.e(LOG_TAG, "Task failed!")
+            Log.e(TAG, "Task failed!")
         else
             completion(result)
     }
 
-    override fun doInBackground(vararg ids: String?): List<Country> {
+    override fun doInBackground(vararg continents: Continents): List<Country> {
         val jsonString = loadJsonFromAssets() ?: return emptyList()
         val gson = Gson()
         val type = object : TypeToken<GeoJsonStructure>() {}.type
         val json: GeoJsonStructure = gson.fromJson(jsonString, type)
 
         val result = ArrayList<Country>()
-        json.features.forEach { country ->
-            ids.find { it == country.id }?.apply {
-                parseCountry(country)?.let {
-                    result.add(it)
-                }
-            }
+        continents.map { it.toCountry() }.forEach { continent ->
+            json.features
+                    .mapNotNull { jsonCountry ->
+                        parseCountry(jsonCountry)?.takeIf { !excludeList.contains(it.id) }
+                    }
+                    .filterTo(result) { country -> continent.intersects(country) }
         }
 
         return result
@@ -59,7 +64,7 @@ class GeoJsonParser(val completion: (countries: List<Country>) -> Unit) : AsyncT
             json = String(buffer)
         }
         catch (e: IOException) {
-            Log.e(LOG_TAG, e.toString())
+            Log.e(TAG, e.toString())
             return null
         }
         return json
@@ -80,21 +85,21 @@ class GeoJsonParser(val completion: (countries: List<Country>) -> Unit) : AsyncT
         }
 
         val vertices: ArrayList<ArrayList<LatLng>>
-        if (jsonCountry.geometry.type == "Polygon") {
-            vertices = arrayListOf(
+        vertices = when (jsonCountry.geometry.type) {
+            "Polygon" -> arrayListOf(
                     parsePolygon(jsonCountry.geometry.coordinates as List<List<List<Double>>>)
             )
-        }
-        else if (jsonCountry.geometry.type == "MultiPolygon") {
-            vertices = ArrayList(
+
+            "MultiPolygon" -> ArrayList(
                     (jsonCountry.geometry.coordinates as List<List<List<List<Double>>>>).map {
                         parsePolygon(it)
                     }
             )
-        }
-        else {
-            Log.e(LOG_TAG, "Unknown GeoJSON geometry in ${jsonCountry.properties.name}")
-            return null
+
+            else -> {
+                Log.e(TAG, "Unknown GeoJSON geometry in ${jsonCountry.properties.name}")
+                return null
+            }
         }
 
         return Country(vertices = vertices, id = jsonCountry.id, name = jsonCountry.properties.name)
