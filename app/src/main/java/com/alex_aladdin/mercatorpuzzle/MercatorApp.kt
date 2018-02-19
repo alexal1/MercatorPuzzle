@@ -9,6 +9,7 @@ import android.util.DisplayMetrics
 import android.util.Log
 import android.view.WindowManager
 import com.alex_aladdin.mercatorpuzzle.country.Country
+import com.alex_aladdin.mercatorpuzzle.data.Continents
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -26,6 +27,7 @@ class MercatorApp : Application() {
         lateinit var gameController: GameController
         lateinit var notificationsHelper: NotificationsHelper
 
+        var currentContinent: Continents? = null
         val loadedCountries = ArrayList<Country>()
         val shownCountries = ArrayList<Country>()
         val countryFixedColor by lazy { ContextCompat.getColor(MercatorApp.applicationContext, R.color.country_fixed) }

@@ -10,6 +10,7 @@
     <color name="transparent">#00000000</color>
     <color name="country_fixed">#B9C9CA</color>
     <color name="gold">#FFDA44</color>
+    <color name="light_blue">#00EEFF</color>
 
     <array name="country_colors">
         <item>#5BC44C</item>

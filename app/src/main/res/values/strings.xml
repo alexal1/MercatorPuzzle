@@ -7,4 +7,12 @@
     <string name="menu_feedback">Give feedback</string>
 
     <string name="top_bar_new_game">Choose a continent</string>
+    <string name="top_bar_loading">Loading:\u00A0</string>
+
+    <string name="continent_europe">Europe</string>
+    <string name="continent_asia">Asia</string>
+    <string name="continent_africa">Africa</string>
+    <string name="continent_north_america">North America</string>
+    <string name="continent_south_america">South America</string>
+    <string name="continent_oceania">Oceania</string>
 </resources>

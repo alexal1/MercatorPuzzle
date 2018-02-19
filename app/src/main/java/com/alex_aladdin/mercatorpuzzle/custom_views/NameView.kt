@@ -29,9 +29,6 @@ class NameView : TextView {
 
     var completeness = 0f   // from 0 to 1
         set(value) {
-            if (field == value) {
-                return
-            }
             field = value
 
             val nameNotNull = countryName ?: run {

@@ -14,11 +14,11 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import com.alex_aladdin.mercatorpuzzle.country.CountriesDisposition
 import com.alex_aladdin.mercatorpuzzle.country.Country
 import com.alex_aladdin.mercatorpuzzle.country.LatitudeBoundaries
 import com.alex_aladdin.mercatorpuzzle.data.Continents
-import com.alex_aladdin.mercatorpuzzle.data.GeoJsonParser
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.annotations.*
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
@@ -52,6 +52,8 @@ class MapActivity : AppCompatActivity() {
     private var isMultiTouchAfterDrag = false
     private var newGameReceiver: BroadcastReceiver? = null
     private var continentChosenReceiver: BroadcastReceiver? = null
+    private var progressReceiver: BroadcastReceiver? = null
+    private var countriesLoadedReceiver: BroadcastReceiver? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,7 +63,16 @@ class MapActivity : AppCompatActivity() {
         setContentView(R.layout.activity_map)
 
         mapView.onCreate(savedInstanceState)
-        initMap()
+        initMap {
+            // First start or continent is not chosen
+            if (savedInstanceState == null || MercatorApp.currentContinent == null) {
+                MercatorApp.gameController.newGame()
+            }
+            // Recreation
+            else {
+                showCountries()
+            }
+        }
 
         setListeners()
         setMenu()
@@ -74,7 +85,7 @@ class MapActivity : AppCompatActivity() {
     /**
      * All initial operations with the map.
      */
-    private fun initMap() {
+    private fun initMap(completion: () -> Unit) {
         mapView.getMapAsync { mapboxMap ->
             // Save object
             this.mapboxMap = mapboxMap
@@ -86,12 +97,8 @@ class MapActivity : AppCompatActivity() {
             mapboxMap.uiSettings.isAttributionEnabled = false
             mapboxMap.uiSettings.isLogoEnabled = false
 
-            if (MercatorApp.loadedCountries.isNotEmpty()) {
-                onCountriesLoaded()
-            }
-            else {
-                loadCountries()
-            }
+            // Invoke callback
+            completion()
         }
 
         mapView.setOnTouchListener { _, event ->
@@ -143,6 +150,9 @@ class MapActivity : AppCompatActivity() {
 
     private fun registerReceivers() {
         newGameReceiver = MercatorApp.notificationsHelper.registerNewGameReceiver {
+            // Remove all polygons
+            polygonsOnMap.entries.map { it.key }.forEach { country -> removePolygons(country) }
+
             // Zoom
             val mapboxMapNotNull = mapboxMap ?: return@registerNewGameReceiver
             mapboxMapNotNull.setZoom(MapboxConstants.MINIMUM_ZOOM.toDouble())
@@ -183,8 +193,9 @@ class MapActivity : AppCompatActivity() {
             // Ease camera
             focusCameraOn(country = continent.toCountry(), withPadding = false)
 
-            // Remove caption
-            topBarView.hideText()
+            // Caption
+            val caption = getString(R.string.top_bar_loading) + getString(continent.stringId)
+            topBarView.showText(caption)
 
             // FAB visibility
             val transitionFAB = Fade(IN)
@@ -192,11 +203,38 @@ class MapActivity : AppCompatActivity() {
             TransitionManager.beginDelayedTransition(layoutDrawer, transitionFAB)
             myFloatingActionButton.visibility = View.VISIBLE
         }
+
+        progressReceiver = MercatorApp.notificationsHelper.registerProgressReceiver { progress ->
+            progressBar.progress = progress
+        }
+
+        countriesLoadedReceiver = MercatorApp.notificationsHelper.registerCountriesLoadedReceiver {
+            // Ease camera with listener
+            val continent = MercatorApp.currentContinent ?: return@registerCountriesLoadedReceiver
+            focusCameraOn(country = continent.toCountry(), withPadding = false) {
+                // Hide ProgressBar and TopBarView
+                progressBar.progress = 0
+                topBarView.hideText()
+
+                // Randomize Countries' positions
+                val mapboxMapNotNull = mapboxMap ?: return@focusCameraOn
+                val viewPort = ViewPort(
+                        northeast = mapboxMapNotNull.projection.fromScreenLocation(PointF(mapView.width.toFloat(), 0f)),
+                        southwest = mapboxMapNotNull.projection.fromScreenLocation(PointF(0f, mapView.height.toFloat()))
+                )
+                CountriesDisposition(viewPort).apply(MercatorApp.loadedCountries)
+
+                // Show the first portion of Countries
+                showCountries()
+            }
+        }
     }
 
     private fun unregisterReceivers() {
         newGameReceiver?.let { MercatorApp.notificationsHelper.unregisterReceiver(it) }
         continentChosenReceiver?.let { MercatorApp.notificationsHelper.unregisterReceiver(it) }
+        progressReceiver?.let { MercatorApp.notificationsHelper.unregisterReceiver(it) }
+        countriesLoadedReceiver?.let { MercatorApp.notificationsHelper.unregisterReceiver(it) }
     }
 
     override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
@@ -272,7 +310,7 @@ class MapActivity : AppCompatActivity() {
     /**
      * Move camera close to the given country.
      */
-    private fun focusCameraOn(country: Country, withPadding: Boolean = true) {
+    private fun focusCameraOn(country: Country, withPadding: Boolean = true, completion: (() -> Unit)? = null) {
         val rect = country.getRect()
         val latLngBounds = LatLngBounds.Builder()
                 .include(LatLng(rect.topLat, rect.rightLng))    // northeast
@@ -287,34 +325,19 @@ class MapActivity : AppCompatActivity() {
         mapboxMap?.easeCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, padding), 1000)
         mySurfaceView.countriesAnimator?.cancel()
         mySurfaceView.clearCanvas()
+
+        // Add animation finish listener
+        mapboxMap?.addOnCameraIdleListener(object : MapboxMap.OnCameraIdleListener {
+
+            override fun onCameraIdle() {
+                mapboxMap?.removeOnCameraIdleListener(this)
+                completion?.invoke()
+            }
+
+        })
     }
 
-    /**
-     * Load countries from GeoJSON.
-     */
-    private fun loadCountries() {
-        GeoJsonParser(
-                completion = { countries ->
-                    MercatorApp.loadedCountries.addAll(countries)
-                    val viewPort = ViewPort(
-                            northeast = mapboxMap!!.projection.fromScreenLocation(PointF(mapView.width.toFloat(), 0f)),
-                            southwest = mapboxMap!!.projection.fromScreenLocation(PointF(0f, mapView.height.toFloat()))
-                    )
-                    CountriesDisposition(viewPort).apply(MercatorApp.loadedCountries)
-                    onCountriesLoaded()
-                },
-                progress = {
-                    Log.i(TAG, "progress = $it")
-                }
-        ).execute(Continents.EUROPE)
-    }
-
-    /**
-     * Function that's invoked when countries are loaded.
-     */
-    private fun onCountriesLoaded() {
-        MercatorApp.shownCountries.forEach { removePolygons(it) }
-        MercatorApp.shownCountries.clear()
+    private fun showCountries() {
         for (country in MercatorApp.loadedCountries) {
             country.color = if (country.isFixed) MercatorApp.countryFixedColor else MercatorApp.obtainColor()
             MercatorApp.shownCountries.add(country)
@@ -331,13 +354,14 @@ class MapActivity : AppCompatActivity() {
             window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
             window.statusBarColor = ContextCompat.getColor(this@MapActivity, R.color.grey80)
 
-            // Set top margin for TopBarView
+            // Set top margin for TopBarView and ProgressBar
             var statusBarHeight = 0
             val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
             if (resourceId > 0) {
                 statusBarHeight = resources.getDimensionPixelSize(resourceId)
             }
             topBarView.topMargin = statusBarHeight
+            (progressBar.layoutParams as ViewGroup.MarginLayoutParams).topMargin = statusBarHeight
         }
     }
 
@@ -376,6 +400,10 @@ class MapActivity : AppCompatActivity() {
         super.onDestroy()
         mapView.onDestroy()
         unregisterReceivers()
+
+        // Clear static objects
+        Companion.polygonsOnMap.clear()
+        Companion.markersOnMap.clear()
     }
 
     /**
