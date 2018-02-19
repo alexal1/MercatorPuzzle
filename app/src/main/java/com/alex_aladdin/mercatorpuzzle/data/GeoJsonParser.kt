@@ -12,9 +12,11 @@ import java.io.IOException
 /**
  * Parses GeoJSON data into Country objects by their IDs. Does it in a background thread.
  *
- * @param completion callback function to invoke after task execution
+ * @param completion    callback function to invoke after task execution
+ * @param progress      callback function to observe progress
  */
-class GeoJsonParser(val completion: (countries: List<Country>) -> Unit) : AsyncTask<Continents, Void, List<Country>>() {
+class GeoJsonParser(val completion: (countries: List<Country>) -> Unit,
+                    val progress: (current: Float) -> Unit) : AsyncTask<Continents, Float, List<Country>>() {
 
     companion object {
 
@@ -32,19 +34,33 @@ class GeoJsonParser(val completion: (countries: List<Country>) -> Unit) : AsyncT
             completion(result)
     }
 
+    override fun onProgressUpdate(vararg values: Float?) {
+        values[0]?.let(progress)
+    }
+
     override fun doInBackground(vararg continents: Continents): List<Country> {
         val jsonString = loadJsonFromAssets() ?: return emptyList()
         val gson = Gson()
         val type = object : TypeToken<GeoJsonStructure>() {}.type
         val json: GeoJsonStructure = gson.fromJson(jsonString, type)
 
+        val count = continents.sumBy { it.count }.toFloat()
         val result = ArrayList<Country>()
         continents.map { it.toCountry() }.forEach { continent ->
             json.features
                     .mapNotNull { jsonCountry ->
                         parseCountry(jsonCountry)?.takeIf { !excludeList.contains(it.id) }
                     }
-                    .filterTo(result) { country -> continent.intersects(country) }
+                    .filterTo(result) { country ->
+                        if(continent.intersects(country)) {
+                            publishProgress((result.size + 1) / count)
+                            true
+                        }
+                        else {
+                            false
+                        }
+
+                    }
         }
 
         return result

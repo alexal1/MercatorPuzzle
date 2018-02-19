@@ -293,15 +293,20 @@ class MapActivity : AppCompatActivity() {
      * Load countries from GeoJSON.
      */
     private fun loadCountries() {
-        GeoJsonParser(completion = { countries ->
-            MercatorApp.loadedCountries.addAll(countries)
-            val viewPort = ViewPort(
-                    northeast = mapboxMap!!.projection.fromScreenLocation(PointF(mapView.width.toFloat(), 0f)),
-                    southwest = mapboxMap!!.projection.fromScreenLocation(PointF(0f, mapView.height.toFloat()))
-            )
-            CountriesDisposition(viewPort).apply(MercatorApp.loadedCountries)
-            onCountriesLoaded()
-        }).execute(Continents.EUROPE)
+        GeoJsonParser(
+                completion = { countries ->
+                    MercatorApp.loadedCountries.addAll(countries)
+                    val viewPort = ViewPort(
+                            northeast = mapboxMap!!.projection.fromScreenLocation(PointF(mapView.width.toFloat(), 0f)),
+                            southwest = mapboxMap!!.projection.fromScreenLocation(PointF(0f, mapView.height.toFloat()))
+                    )
+                    CountriesDisposition(viewPort).apply(MercatorApp.loadedCountries)
+                    onCountriesLoaded()
+                },
+                progress = {
+                    Log.i(TAG, "progress = $it")
+                }
+        ).execute(Continents.EUROPE)
     }
 
     /**
