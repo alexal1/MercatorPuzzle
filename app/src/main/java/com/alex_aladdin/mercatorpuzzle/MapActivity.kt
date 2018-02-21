@@ -158,11 +158,14 @@ class MapActivity : AppCompatActivity() {
             mapboxMapNotNull.setZoom(MapboxConstants.MINIMUM_ZOOM.toDouble())
 
             // Markers
-            val icon = IconFactory.getInstance(this@MapActivity).fromResource(R.drawable.point)
+            val iconFactory = IconFactory.getInstance(this@MapActivity)
+            val bitmap = createBitmapFrom(R.drawable.point)
+            val iconSolid = iconFactory.fromBitmap(bitmap)
+            val iconTransparent = iconFactory.fromBitmap(bitmap.alpha(0.4f))
             Continents.values().forEach { continent ->
                 val marker = mapboxMapNotNull.addMarker(MarkerOptions()
                         .position(continent.center)
-                        .icon(icon))
+                        .icon(if (continent == Continents.EUROPE) iconSolid else iconTransparent))
                 markersOnMap[marker] = continent
             }
 
@@ -170,7 +173,13 @@ class MapActivity : AppCompatActivity() {
             mapboxMapNotNull.setOnMarkerClickListener { marker ->
                 markersOnMap[marker]
                         ?.let { continent ->
-                            MercatorApp.gameController.chooseContinent(continent)
+                            if (continent == Continents.EUROPE) {
+                                MercatorApp.gameController.chooseContinent(continent)
+                            }
+                            else {
+                                val continentDialogFragment = ContinentDialogFragment.instance(continent)
+                                continentDialogFragment.show(supportFragmentManager, ContinentDialogFragment.TAG)
+                            }
                             true
                         }
                         ?: false

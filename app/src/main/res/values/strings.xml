@@ -15,4 +15,10 @@
     <string name="continent_north_america">North America</string>
     <string name="continent_south_america">South America</string>
     <string name="continent_oceania">Oceania</string>
+
+    <string name="continent_dialog_not_available">\u00A0is not available</string>
+    <string name="continent_dialog_message">
+        Only &lt;b>Europe&lt;/b> is available in beta version. Full functionality will be opened in
+        the stable version release.
+    </string>
 </resources>
