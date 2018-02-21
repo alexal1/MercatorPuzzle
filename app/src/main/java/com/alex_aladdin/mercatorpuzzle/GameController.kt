@@ -6,6 +6,12 @@ import kotlin.math.ceil
 
 class GameController {
 
+    companion object {
+
+        const val LAP_PORTION = 5
+
+    }
+
     fun newGame() {
         MercatorApp.apply {
             currentContinent = null
@@ -29,6 +35,19 @@ class GameController {
                         notificationsHelper.sendProgressNotification(currentInt)
                     }
             ).execute(continent)
+        }
+    }
+
+    fun readyForNextLap() {
+        MercatorApp.apply {
+            shownCountries.clear()
+            val unfixedCountries = loadedCountries.filter { !it.isFixed }.shuffled()
+            if (unfixedCountries.isNotEmpty()) {
+                notificationsHelper.sendNewLapNotification(unfixedCountries.take(LAP_PORTION))
+            }
+            else {
+                notificationsHelper.sendFinishGameNotification()
+            }
         }
     }
 

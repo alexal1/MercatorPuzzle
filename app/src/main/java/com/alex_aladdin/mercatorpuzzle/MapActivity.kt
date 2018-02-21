@@ -56,6 +56,7 @@ class MapActivity : AppCompatActivity() {
     private var continentChosenReceiver: BroadcastReceiver? = null
     private var progressReceiver: BroadcastReceiver? = null
     private var countriesLoadedReceiver: BroadcastReceiver? = null
+    private var newLapReceiver: BroadcastReceiver? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,16 +73,16 @@ class MapActivity : AppCompatActivity() {
             }
             // Recreation
             else {
-                showCountries()
+                val shownCountriesCopy = MercatorApp.shownCountries.sortedBy { !it.isFixed }
+                MercatorApp.shownCountries.clear()
+                showCountries(shownCountriesCopy)
             }
         }
 
         setListeners()
         setMenu()
         registerReceivers()
-
-        mySurfaceView.setZOrderMediaOverlay(true)               // Show MySurfaceView above MapView
-        mySurfaceView.holder.setFormat(PixelFormat.TRANSPARENT) // Make MySurfaceView transparent
+        setAppearance()
     }
 
     /**
@@ -148,6 +149,13 @@ class MapActivity : AppCompatActivity() {
             layoutDrawer.closeDrawer(GravityCompat.START)
             true
         }
+    }
+
+    private fun setAppearance() {
+        mySurfaceView.setZOrderMediaOverlay(true)               // Show MySurfaceView above MapView
+        mySurfaceView.holder.setFormat(PixelFormat.TRANSPARENT) // Make MySurfaceView transparent
+
+        myFloatingActionButton.visibility = if (MercatorApp.currentContinent == null) View.GONE else View.VISIBLE
     }
 
     private fun registerReceivers() {
@@ -236,9 +244,16 @@ class MapActivity : AppCompatActivity() {
                 )
                 CountriesDisposition(viewPort).apply(MercatorApp.loadedCountries)
 
-                // Show the first portion of Countries
-                showCountries()
+                // Start the first lap
+                MercatorApp.gameController.readyForNextLap()
             }
+        }
+
+        newLapReceiver = MercatorApp.notificationsHelper.registerNewLapReceiver { countries ->
+            // Remove all polygons
+            polygonsOnMap.entries.map { it.key }.forEach { country -> removePolygons(country) }
+
+            showCountries(countries)
         }
     }
 
@@ -247,6 +262,7 @@ class MapActivity : AppCompatActivity() {
         continentChosenReceiver?.let { MercatorApp.notificationsHelper.unregisterReceiver(it) }
         progressReceiver?.let { MercatorApp.notificationsHelper.unregisterReceiver(it) }
         countriesLoadedReceiver?.let { MercatorApp.notificationsHelper.unregisterReceiver(it) }
+        newLapReceiver?.let { MercatorApp.notificationsHelper.unregisterReceiver(it) }
     }
 
     override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
@@ -349,8 +365,8 @@ class MapActivity : AppCompatActivity() {
         })
     }
 
-    private fun showCountries() {
-        for (country in MercatorApp.loadedCountries) {
+    private fun showCountries(countries: List<Country>) {
+        for (country in countries) {
             country.color = if (country.isFixed) MercatorApp.countryFixedColor else MercatorApp.obtainColor()
             MercatorApp.shownCountries.add(country)
             myFloatingActionButton.subscribeOn(country.currentCenterObservable)

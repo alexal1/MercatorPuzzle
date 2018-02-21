@@ -51,7 +51,6 @@
             android:clickable="true"
             android:focusable="true"
             android:src="@drawable/ic_location_searching_white_18dp"
-            android:visibility="gone"
             app:fabSize="auto"
             app:elevation="4dp"
             app:pressedTranslationZ="8dp" />
