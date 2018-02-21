@@ -164,7 +164,8 @@ class MapActivity : AppCompatActivity() {
             val bitmap = createBitmapFrom(R.drawable.point)
             val iconSolid = iconFactory.fromBitmap(bitmap)
             val iconTransparent = iconFactory.fromBitmap(bitmap.alpha(0.4f))
-            Continents.values().forEach { continent ->
+            for (continent in Continents.values()) {
+                if (markersOnMap.values.contains(continent)) continue
                 val marker = mapboxMapNotNull.addMarker(MarkerOptions()
                         .position(continent.center)
                         .icon(if (continent == Continents.EUROPE) iconSolid else iconTransparent))
