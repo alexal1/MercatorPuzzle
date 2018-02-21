@@ -10,6 +10,7 @@ import android.util.Log
 import android.view.WindowManager
 import com.alex_aladdin.mercatorpuzzle.country.Country
 import com.alex_aladdin.mercatorpuzzle.data.Continents
+import com.alex_aladdin.mercatorpuzzle.helpers.NotificationsHelper
 import java.util.*
 import kotlin.collections.ArrayList
 

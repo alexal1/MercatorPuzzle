@@ -1,10 +1,11 @@
-package com.alex_aladdin.mercatorpuzzle
+package com.alex_aladdin.mercatorpuzzle.helpers
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.support.v4.content.LocalBroadcastManager
+import com.alex_aladdin.mercatorpuzzle.MercatorApp
 import com.alex_aladdin.mercatorpuzzle.data.Continents
 import java.io.Serializable
 
@@ -12,13 +13,13 @@ class NotificationsHelper {
 
     companion object {
 
-        const val NOTIFICATION_NEW_GAME = "com.alex_aladdin.mercatorpuzzle.NotificationsHelper.NOTIFICATION_NEW_GAME"
-        const val NOTIFICATION_CONTINENT_CHOSEN = "com.alex_aladdin.mercatorpuzzle.NotificationsHelper.NOTIFICATION_CONTINENT_CHOSEN"
-        const val NOTIFICATION_COUNTRIES_LOADED = "com.alex_aladdin.mercatorpuzzle.NotificationsHelper.NOTIFICATION_COUNTRIES_LOADED"
-        const val NOTIFICATION_PROGRESS = "com.alex_aladdin.mercatorpuzzle.NotificationsHelper.NOTIFICATION_PROGRESS"
+        const val NOTIFICATION_NEW_GAME = "com.alex_aladdin.mercatorpuzzle.helpers.NotificationsHelper.NOTIFICATION_NEW_GAME"
+        const val NOTIFICATION_CONTINENT_CHOSEN = "com.alex_aladdin.mercatorpuzzle.helpers.NotificationsHelper.NOTIFICATION_CONTINENT_CHOSEN"
+        const val NOTIFICATION_COUNTRIES_LOADED = "com.alex_aladdin.mercatorpuzzle.helpers.NotificationsHelper.NOTIFICATION_COUNTRIES_LOADED"
+        const val NOTIFICATION_PROGRESS = "com.alex_aladdin.mercatorpuzzle.helpers.NotificationsHelper.NOTIFICATION_PROGRESS"
 
-        const val EXTRA_CONTINENT = "com.alex_aladdin.mercatorpuzzle.NotificationsHelper.EXTRA_CONTINENT"
-        const val EXTRA_PROGRESS = "com.alex_aladdin.mercatorpuzzle.NotificationsHelper.EXTRA_PROGRESS"
+        const val EXTRA_CONTINENT = "com.alex_aladdin.mercatorpuzzle.helpers.NotificationsHelper.EXTRA_CONTINENT"
+        const val EXTRA_PROGRESS = "com.alex_aladdin.mercatorpuzzle.helpers.NotificationsHelper.EXTRA_PROGRESS"
 
     }
 

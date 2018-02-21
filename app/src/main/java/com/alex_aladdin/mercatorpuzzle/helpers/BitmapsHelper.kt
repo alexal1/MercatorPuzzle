@@ -1,9 +1,10 @@
-package com.alex_aladdin.mercatorpuzzle
+package com.alex_aladdin.mercatorpuzzle.helpers
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Paint
+import com.alex_aladdin.mercatorpuzzle.MercatorApp
 
 /**
  * Create a copy of this Bitmap with the given alpha.
