@@ -28,6 +28,7 @@ import com.mapbox.mapboxsdk.constants.MapboxConstants
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.geometry.LatLngBounds
 import com.mapbox.mapboxsdk.maps.MapboxMap
+import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.activity_map.*
 
 class MapActivity : AppCompatActivity() {
@@ -50,6 +51,7 @@ class MapActivity : AppCompatActivity() {
 
     }
 
+    private val compositeDisposable = CompositeDisposable()
     private var mapboxMap: MapboxMap? = null
     private var isMultiTouchAfterDrag = false
     private var newGameReceiver: BroadcastReceiver? = null
@@ -253,6 +255,9 @@ class MapActivity : AppCompatActivity() {
             // Remove all polygons
             polygonsOnMap.entries.map { it.key }.forEach { country -> removePolygons(country) }
 
+            // Dispose all subscriptions
+            compositeDisposable.clear()
+
             showCountries(countries)
         }
     }
@@ -369,8 +374,10 @@ class MapActivity : AppCompatActivity() {
         for (country in countries) {
             country.color = if (country.isFixed) MercatorApp.countryFixedColor else MercatorApp.obtainColor()
             MercatorApp.shownCountries.add(country)
-            myFloatingActionButton.subscribeOn(country.currentCenterObservable)
-            topBarView.subscribeOn(country.currentCenterObservable)
+            compositeDisposable.addAll(
+                    myFloatingActionButton.subscribeOn(country.currentCenterObservable),
+                    topBarView.subscribeOn(country.currentCenterObservable)
+            )
         }
         myFloatingActionButton.currentCountry = MercatorApp.shownCountries.firstOrNull()
         mySurfaceView.showCountries(MercatorApp.shownCountries)

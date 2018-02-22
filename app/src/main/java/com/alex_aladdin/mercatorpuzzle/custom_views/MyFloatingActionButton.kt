@@ -12,7 +12,6 @@ import com.alex_aladdin.mercatorpuzzle.R
 import com.alex_aladdin.mercatorpuzzle.country.Country
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.rxkotlin.subscribeBy
 
@@ -47,7 +46,6 @@ class MyFloatingActionButton : FloatingActionButton, View.OnClickListener {
 
     var isFocusedOnCountry = false
 
-    private val compositeDisposable = CompositeDisposable()
     private var additionalListener: OnClickListener? = null
 
     init {
@@ -55,8 +53,8 @@ class MyFloatingActionButton : FloatingActionButton, View.OnClickListener {
         setColor(defaultColor)
     }
 
-    fun subscribeOn(observable: Observable<Country>) {
-        val disposable: Disposable = observable
+    fun subscribeOn(observable: Observable<Country>): Disposable {
+        return observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeBy(
                         onNext = { country ->
@@ -71,8 +69,6 @@ class MyFloatingActionButton : FloatingActionButton, View.OnClickListener {
                             Log.e(TAG, "subscribeOn():", e)
                         }
                 )
-
-        compositeDisposable.add(disposable)
     }
 
     private fun setColor(color: Int) {
@@ -111,12 +107,6 @@ class MyFloatingActionButton : FloatingActionButton, View.OnClickListener {
                 callOnClick()
             }
         }
-    }
-
-    override fun onDetachedFromWindow() {
-        super.onDetachedFromWindow()
-
-        compositeDisposable.clear()
     }
 
 }

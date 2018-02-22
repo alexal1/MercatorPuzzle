@@ -15,7 +15,6 @@ import com.alex_aladdin.mercatorpuzzle.R
 import com.alex_aladdin.mercatorpuzzle.country.Country
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.rxkotlin.subscribeBy
 import kotlinx.android.synthetic.main.top_bar_view.view.*
@@ -45,7 +44,6 @@ class TopBarView : RelativeLayout {
 
     private enum class BarType { FLAG, FLAG_AND_NAME }
 
-    private val compositeDisposable = CompositeDisposable()
     private var currentType = BarType.FLAG
     private var initialDistanceToTarget = 0.0
     private val normalizedDistance: Double get() =
@@ -110,8 +108,8 @@ class TopBarView : RelativeLayout {
             }
         }
 
-    fun subscribeOn(observable: Observable<Country>) {
-        val disposable: Disposable = observable
+    fun subscribeOn(observable: Observable<Country>): Disposable {
+        return observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeBy(
                         onNext = { country ->
@@ -128,8 +126,6 @@ class TopBarView : RelativeLayout {
                             Log.e(TAG, "subscribeOn():", e)
                         }
                 )
-
-        compositeDisposable.add(disposable)
     }
 
     /**
@@ -230,12 +226,6 @@ class TopBarView : RelativeLayout {
         }
         coins = ceil(coins)
         return coins.toInt()
-    }
-
-    override fun onDetachedFromWindow() {
-        super.onDetachedFromWindow()
-
-        compositeDisposable.clear()
     }
 
 }
