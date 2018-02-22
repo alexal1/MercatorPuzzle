@@ -219,7 +219,8 @@ class MapActivity : AppCompatActivity() {
             val caption = getString(R.string.top_bar_loading) + getString(continent.stringId)
             topBarView.showText(caption)
 
-            // FAB visibility
+            // FAB
+            myFloatingActionButton.currentCountry = null
             val transitionFAB = Fade(IN)
             transitionFAB.addTarget(myFloatingActionButton)
             TransitionManager.beginDelayedTransition(layoutDrawer, transitionFAB)
