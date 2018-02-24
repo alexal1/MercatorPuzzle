@@ -46,8 +46,19 @@ class FlagView : ImageView {
 
     private var flagBitmap: Bitmap? = null
     private var blurredBitmap: Bitmap? = null
+    private var renderScript: RenderScript? = null
     private val cornersRadius = resources.getDimension(R.dimen.flag_view_corners_radius)
-    private val rs = RenderScript.create(context)
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        renderScript = RenderScript.create(context)
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        RenderScript.releaseAllContexts()
+        renderScript = null
+    }
 
     private fun getBitmapById(id: String?): Bitmap? {
         id ?: return null
@@ -84,6 +95,7 @@ class FlagView : ImageView {
     }
 
     private fun blurBitmap(bitmapInput: Bitmap, bitmapOutput: Bitmap, blurRadius: Float) {
+        val rs = renderScript ?: return
         val input = Allocation.createFromBitmap(rs, bitmapInput)
         val output = Allocation.createTyped(rs, input.type)
         if (blurRadius > 0f) {
