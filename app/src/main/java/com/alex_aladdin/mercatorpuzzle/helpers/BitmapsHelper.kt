@@ -24,3 +24,12 @@ fun Bitmap.alpha(alpha: Float): Bitmap {
  */
 fun createBitmapFrom(resId: Int): Bitmap
         = BitmapFactory.decodeResource(MercatorApp.applicationContext.resources, resId)
+
+/**
+ * Copy this bitmap into the given one.
+ */
+fun Bitmap.copyInto(bitmapOutput: Bitmap) {
+    val bitmapInput = this@copyInto
+    val canvas = Canvas(bitmapOutput)
+    canvas.drawBitmap(bitmapInput, 0f, 0f, Paint())
+}

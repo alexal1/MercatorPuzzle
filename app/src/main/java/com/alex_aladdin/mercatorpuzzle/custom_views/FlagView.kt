@@ -10,6 +10,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.widget.ImageView
 import com.alex_aladdin.mercatorpuzzle.R
+import com.alex_aladdin.mercatorpuzzle.helpers.copyInto
 
 
 class FlagView : ImageView {
@@ -95,16 +96,20 @@ class FlagView : ImageView {
     }
 
     private fun blurBitmap(bitmapInput: Bitmap, bitmapOutput: Bitmap, blurRadius: Float) {
-        val rs = renderScript ?: return
-        val input = Allocation.createFromBitmap(rs, bitmapInput)
-        val output = Allocation.createTyped(rs, input.type)
         if (blurRadius > 0f) {
+            val rs = renderScript ?: return
+            val input = Allocation.createFromBitmap(rs, bitmapInput)
+            val output = Allocation.createTyped(rs, input.type)
             val script = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs))
             script.setRadius(blurRadius)
             script.setInput(input)
             script.forEach(output)
+            output.copyTo(bitmapOutput)
         }
-        output.copyTo(bitmapOutput)
+        else {
+            renderScript?.finish()
+            bitmapInput.copyInto(bitmapOutput)
+        }
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
