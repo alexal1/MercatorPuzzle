@@ -12,6 +12,7 @@ import android.support.v4.content.ContextCompat
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -28,7 +29,11 @@ import com.mapbox.mapboxsdk.constants.MapboxConstants
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.geometry.LatLngBounds
 import com.mapbox.mapboxsdk.maps.MapboxMap
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
+import io.reactivex.rxkotlin.subscribeBy
 import kotlinx.android.synthetic.main.activity_map.*
 
 class MapActivity : AppCompatActivity() {
@@ -59,6 +64,21 @@ class MapActivity : AppCompatActivity() {
     private var progressReceiver: BroadcastReceiver? = null
     private var countriesLoadedReceiver: BroadcastReceiver? = null
     private var newLapReceiver: BroadcastReceiver? = null
+
+    var onLapFragmentReadyCallback = {
+        supportFragmentManager.findFragmentByTag(LapFragment.TAG)?.let { lapFragment ->
+            supportFragmentManager
+                    .beginTransaction()
+                    .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                    .remove(lapFragment)
+                    .commit()
+            supportFragmentManager.popBackStack()
+            MercatorApp.gameController.readyForNextLap()
+        }
+    }
+    var onMenuClickCallback = { _: View ->
+        layoutDrawer.openDrawer(Gravity.START)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -299,6 +319,15 @@ class MapActivity : AppCompatActivity() {
         }
     }
 
+    override fun onBackPressed() {
+        (supportFragmentManager.findFragmentByTag(LapFragment.TAG) as? LapFragment)?.let { lapFragment ->
+            lapFragment.onBackPressed()
+            return@onBackPressed
+        }
+
+        super.onBackPressed()
+    }
+
     /**
      * Draw country on the map.
      */
@@ -377,11 +406,33 @@ class MapActivity : AppCompatActivity() {
             MercatorApp.shownCountries.add(country)
             compositeDisposable.addAll(
                     myFloatingActionButton.subscribeOn(country.currentCenterObservable),
-                    topBarView.subscribeOn(country.currentCenterObservable)
+                    topBarView.subscribeOn(country.currentCenterObservable),
+                    this@MapActivity.subscribeOn(country.currentCenterObservable)
             )
         }
         myFloatingActionButton.currentCountry = MercatorApp.shownCountries.firstOrNull()
         mySurfaceView.showCountries(MercatorApp.shownCountries)
+    }
+
+    private fun subscribeOn(observable: Observable<Country>): Disposable {
+        return observable
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeBy(
+                        onComplete = {
+                            // Show LapFragment if lap is finished and LapFragment is not added yet
+                            if (MercatorApp.shownCountries.all { it.isFixed }
+                                    && supportFragmentManager.findFragmentByTag(LapFragment.TAG) == null) {
+
+                                supportFragmentManager
+                                        .beginTransaction()
+                                        .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                                        .add(R.id.layoutDrawer, LapFragment(), LapFragment.TAG)
+                                        .addToBackStack(LapFragment.TAG)
+                                        .commit()
+                                topBarView.hideText()
+                            }
+                        }
+                )
     }
 
     private fun setStatusBar() {

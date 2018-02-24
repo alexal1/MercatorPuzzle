@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layoutFragmentLap"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/grey80">
+
+    <Button
+        android:id="@+id/buttonSkip"
+        android:layout_width="wrap_content"
+        android:layout_height="32dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginEnd="16dp"
+        android:text="@string/lap_fragment_button_skip"
+        android:background="@drawable/button_white"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <Button
+        android:id="@+id/buttonMenu"
+        android:layout_width="wrap_content"
+        android:layout_height="32dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
+        android:text="@string/lap_fragment_button_menu"
+        android:background="@drawable/button_white"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <RelativeLayout
+        android:id="@+id/layoutCoins"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="64dp"
+        android:layout_marginEnd="64dp"
+        android:layout_marginStart="64dp"
+        android:layout_marginTop="64dp"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_max="384dp"
+        app:layout_constraintHeight_max="384dp"
+        tools:background="@drawable/fragment_lap_circle">
+
+        <TextView
+            android:id="@+id/textCoins"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:textColor="@color/white"
+            android:textSize="48sp"
+            android:textStyle="bold"
+            android:drawablePadding="10dp"
+            android:drawableRight="@drawable/coin_stack_white_large"
+            android:drawableEnd="@drawable/coin_stack_white_large"
+            tools:text="2324"/>
+
+        <me.zhanghai.android.materialprogressbar.MaterialProgressBar
+            android:id="@+id/progressCoins"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:max="100"
+            app:mpb_progressTint="@color/light_blue"
+            app:mpb_showProgressBackground="false"
+            app:mpb_useIntrinsicPadding="false"
+            tools:progress="100"
+            style="@style/Widget.MaterialProgressBar.ProgressBar" />
+
+    </RelativeLayout>
+
+</android.support.constraint.ConstraintLayout>

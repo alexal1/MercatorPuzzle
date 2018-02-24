@@ -12,7 +12,11 @@ class GameController {
 
     }
 
+    private var currentGameCoinsAmount = 0
+    private var currentLapCoinsAmount = 0
+
     fun newGame() {
+        currentGameCoinsAmount = 0
         MercatorApp.apply {
             currentContinent = null
             shownCountries.clear()
@@ -39,6 +43,7 @@ class GameController {
     }
 
     fun readyForNextLap() {
+        currentLapCoinsAmount = 0
         MercatorApp.apply {
             shownCountries.clear()
             val unfixedCountries = loadedCountries.filter { !it.isFixed }.shuffled()
@@ -49,6 +54,19 @@ class GameController {
                 notificationsHelper.sendFinishGameNotification()
             }
         }
+    }
+
+    fun addIncome(amount: Int) {
+        currentGameCoinsAmount += amount
+        currentLapCoinsAmount += amount
+    }
+
+    fun getLapIncome(): Int {
+        return currentLapCoinsAmount
+    }
+
+    fun getGameIncome(): Int {
+        return currentGameCoinsAmount
     }
 
 }

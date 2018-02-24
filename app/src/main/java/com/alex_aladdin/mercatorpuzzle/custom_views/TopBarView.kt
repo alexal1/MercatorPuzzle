@@ -11,6 +11,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.View
 import android.widget.RelativeLayout
+import com.alex_aladdin.mercatorpuzzle.MercatorApp
 import com.alex_aladdin.mercatorpuzzle.R
 import com.alex_aladdin.mercatorpuzzle.country.Country
 import io.reactivex.Observable
@@ -120,6 +121,7 @@ class TopBarView : RelativeLayout {
                                 coinsCounterView.visibility = View.VISIBLE
                                 val amount = getCoinsByArea(country.area)
                                 coinsCounterView.showIncome(amount)
+                                MercatorApp.gameController.addIncome(amount)
                             }
                         },
                         onError = { e ->

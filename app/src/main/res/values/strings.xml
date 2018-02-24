@@ -21,4 +21,7 @@
         Only &lt;b>Europe&lt;/b> is available in beta version. Full functionality will be opened in
         the stable version release.
     </string>
+
+    <string name="lap_fragment_button_menu">Menu</string>
+    <string name="lap_fragment_button_skip">Skip</string>
 </resources>
