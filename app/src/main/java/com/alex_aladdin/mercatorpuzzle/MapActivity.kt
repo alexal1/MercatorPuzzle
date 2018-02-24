@@ -435,7 +435,7 @@ class MapActivity : AppCompatActivity() {
                                         .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                                         .add(R.id.layoutDrawer, LapFragment(), LapFragment.TAG)
                                         .addToBackStack(LapFragment.TAG)
-                                        .commit()
+                                        .commitAllowingStateLoss()
                                 topBarView.hideText()
                             }
                         }
