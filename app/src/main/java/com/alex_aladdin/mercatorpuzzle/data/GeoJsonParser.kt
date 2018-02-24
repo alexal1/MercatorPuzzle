@@ -53,7 +53,6 @@ class GeoJsonParser(val completion: (countries: List<Country>) -> Unit,
                     }
                     .filterTo(result) { country ->
                         if(continent.intersects(country)) {
-                            Thread.sleep(1)
                             publishProgress((result.size + 1) / count)
                             true
                         }
