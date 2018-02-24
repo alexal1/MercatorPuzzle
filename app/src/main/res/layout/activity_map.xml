@@ -53,7 +53,34 @@
             android:src="@drawable/ic_location_searching_white_18dp"
             app:fabSize="auto"
             app:elevation="4dp"
-            app:pressedTranslationZ="8dp" />
+            app:pressedTranslationZ="8dp"
+            tools:ignore="RelativeOverlap" />
+
+        <ImageView
+            android:id="@+id/imageMapboxLogo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:paddingBottom="16dp"
+            android:paddingLeft="16dp"
+            android:paddingStart="16dp"
+            android:paddingRight="2dp"
+            android:paddingEnd="2dp"
+            android:src="@drawable/mapbox_logo_icon"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
+            android:id="@+id/imageMapboxAttribution"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_toRightOf="@id/imageMapboxLogo"
+            android:layout_toEndOf="@id/imageMapboxLogo"
+            android:paddingBottom="16dp"
+            android:src="@drawable/mapbox_info_bg_selector"
+            android:contentDescription="@string/mapbox_attributionsIconContentDescription"/>
 
     </RelativeLayout>
 

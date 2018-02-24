@@ -16,6 +16,7 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import com.alex_aladdin.mercatorpuzzle.country.CountriesDisposition
 import com.alex_aladdin.mercatorpuzzle.country.Country
 import com.alex_aladdin.mercatorpuzzle.country.LatitudeBoundaries
@@ -121,6 +122,12 @@ class MapActivity : AppCompatActivity() {
             mapboxMap.uiSettings.isCompassEnabled = false
             mapboxMap.uiSettings.isAttributionEnabled = false
             mapboxMap.uiSettings.isLogoEnabled = false
+
+            // Logo and attribution are created manually, so we need to set click listener
+            val attributionView = mapView.findViewById<ImageView>(R.id.attributionView)
+            imageMapboxAttribution.setOnClickListener {
+                attributionView.callOnClick()
+            }
 
             // Invoke callback
             completion()
