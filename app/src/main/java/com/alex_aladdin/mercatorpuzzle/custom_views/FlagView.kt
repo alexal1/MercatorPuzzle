@@ -70,7 +70,7 @@ class FlagView : ImageView {
         }
         else {
             Log.e(TAG, "No such flag: $name")
-            null
+            BitmapFactory.decodeResource(context.resources, R.drawable.unknown)
         }
     }
 
