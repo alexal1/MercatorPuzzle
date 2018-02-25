@@ -2,7 +2,6 @@ package com.alex_aladdin.mercatorpuzzle
 
 import android.content.BroadcastReceiver
 import android.graphics.PixelFormat
-import android.graphics.PointF
 import android.os.Build
 import android.os.Bundle
 import android.support.transition.Fade
@@ -241,9 +240,6 @@ class MapActivity : AppCompatActivity() {
             }
             markersOnMap.clear()
 
-            // Ease camera
-            focusCameraOn(country = continent.toCountry(), withPadding = false)
-
             // Caption
             val caption = getString(R.string.top_bar_loading) + getString(continent.stringId)
             topBarView.showText(caption)
@@ -261,24 +257,23 @@ class MapActivity : AppCompatActivity() {
         }
 
         countriesLoadedReceiver = MercatorApp.notificationsHelper.registerCountriesLoadedReceiver {
-            // Ease camera with listener
-            val continent = MercatorApp.currentContinent ?: return@registerCountriesLoadedReceiver
-            focusCameraOn(country = continent.toCountry(), withPadding = false) {
-                // Hide ProgressBar and TopBarView
-                progressBar.progress = 0
-                topBarView.hideText()
+            // Hide ProgressBar and TopBarView
+            progressBar.progress = 0
+            topBarView.hideText()
 
-                // Randomize Countries' positions
-                val mapboxMapNotNull = mapboxMap ?: return@focusCameraOn
-                val viewPort = ViewPort(
-                        northeast = mapboxMapNotNull.projection.fromScreenLocation(PointF(mapView.width.toFloat(), 0f)),
-                        southwest = mapboxMapNotNull.projection.fromScreenLocation(PointF(0f, mapView.height.toFloat()))
-                )
-                CountriesDisposition(viewPort).apply(MercatorApp.loadedCountries)
+            // Randomize Countries' positions
+            val rect = MercatorApp.currentContinent
+                    ?.toCountry()
+                    ?.getRect()
+                    ?: return@registerCountriesLoadedReceiver
+            val viewPort = ViewPort(
+                    northeast = LatLng(rect.topLat, rect.rightLng),
+                    southwest = LatLng(rect.bottomLat, rect.leftLng)
+            )
+            CountriesDisposition(viewPort).apply(MercatorApp.loadedCountries)
 
-                // Start the first lap
-                MercatorApp.gameController.readyForNextLap()
-            }
+            // Start the first lap
+            MercatorApp.gameController.readyForNextLap()
         }
 
         newLapReceiver = MercatorApp.notificationsHelper.registerNewLapReceiver { countries ->
@@ -288,7 +283,11 @@ class MapActivity : AppCompatActivity() {
             // Dispose all subscriptions
             compositeDisposable.clear()
 
-            showCountries(countries)
+            // Focus camera on the continent and show countries
+            val continent = MercatorApp.currentContinent ?: return@registerNewLapReceiver
+            focusCameraOn(country = continent.toCountry(), withPadding = false) {
+                showCountries(countries)
+            }
         }
     }
 
