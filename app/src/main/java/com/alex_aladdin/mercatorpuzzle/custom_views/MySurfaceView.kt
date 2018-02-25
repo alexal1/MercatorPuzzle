@@ -173,6 +173,13 @@ class MySurfaceView : SurfaceView, SurfaceHolder.Callback {
             return
         }
 
+        if (!isEnabled) {
+            countries.forEach {
+                (context as MapActivity).drawCountry(it)
+            }
+            return
+        }
+
         drawThread?.stopDrawing()
         drawThread = ScaleDrawThread.obtain(
                 surfaceHolder = holder,
