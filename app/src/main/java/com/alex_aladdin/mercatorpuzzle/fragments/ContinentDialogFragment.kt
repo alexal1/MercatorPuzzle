@@ -1,4 +1,4 @@
-package com.alex_aladdin.mercatorpuzzle
+package com.alex_aladdin.mercatorpuzzle.fragments
 
 import android.app.Dialog
 import android.os.Build
@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.support.v4.app.DialogFragment
 import android.support.v7.app.AlertDialog
 import android.text.Html
+import com.alex_aladdin.mercatorpuzzle.MercatorApp
+import com.alex_aladdin.mercatorpuzzle.R
 import com.alex_aladdin.mercatorpuzzle.data.Continents
 
 class ContinentDialogFragment : DialogFragment() {

@@ -21,6 +21,8 @@ import com.alex_aladdin.mercatorpuzzle.country.CountriesDisposition
 import com.alex_aladdin.mercatorpuzzle.country.Country
 import com.alex_aladdin.mercatorpuzzle.country.LatitudeBoundaries
 import com.alex_aladdin.mercatorpuzzle.data.Continents
+import com.alex_aladdin.mercatorpuzzle.fragments.ContinentDialogFragment
+import com.alex_aladdin.mercatorpuzzle.fragments.LapFragment
 import com.alex_aladdin.mercatorpuzzle.helpers.alpha
 import com.alex_aladdin.mercatorpuzzle.helpers.createBitmapFrom
 import com.mapbox.mapboxsdk.Mapbox

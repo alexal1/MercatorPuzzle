@@ -1,4 +1,4 @@
-package com.alex_aladdin.mercatorpuzzle
+package com.alex_aladdin.mercatorpuzzle.fragments
 
 import android.animation.Animator
 import android.animation.AnimatorSet
@@ -14,6 +14,9 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import com.alex_aladdin.mercatorpuzzle.MapActivity
+import com.alex_aladdin.mercatorpuzzle.MercatorApp
+import com.alex_aladdin.mercatorpuzzle.R
 import kotlinx.android.synthetic.main.fragment_lap.*
 import kotlin.math.ceil
 
