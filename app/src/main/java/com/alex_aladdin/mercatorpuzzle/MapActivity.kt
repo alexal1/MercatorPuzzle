@@ -483,10 +483,10 @@ class MapActivity : AppCompatActivity() {
                                         .addToBackStack(LapFragment.TAG)
                                         .commitAllowingStateLoss()
                                 topBarView.hideText()
-                            }
 
-                            // Hide FAB
-                            myFloatingActionButton.visibility = View.GONE
+                                // Hide FAB
+                                myFloatingActionButton.visibility = View.GONE
+                            }
                         }
                 )
     }
