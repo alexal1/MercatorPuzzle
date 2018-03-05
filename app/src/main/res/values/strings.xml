@@ -24,4 +24,12 @@
 
     <string name="lap_fragment_button_menu">Menu</string>
     <string name="lap_fragment_button_skip">Skip</string>
+
+    <string name="finish_fragment_button_menu">Menu</string>
+    <string name="finish_fragment_button_results">Results</string>
+    <string name="finish_fragment_title_done">\u00A0is done</string>
+    <string name="finish_fragment_subtitle">Check your progress in \"My results\" menu</string>
+    <string name="finish_fragment_countries">countries</string>
+    <string name="finish_fragment_minutes">minutes</string>
+    <string name="finish_fragment_coins">coins</string>
 </resources>

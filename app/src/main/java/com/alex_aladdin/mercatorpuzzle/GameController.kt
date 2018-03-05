@@ -1,6 +1,7 @@
 package com.alex_aladdin.mercatorpuzzle
 
 import com.alex_aladdin.mercatorpuzzle.data.Continents
+import com.alex_aladdin.mercatorpuzzle.data.GameData
 import com.alex_aladdin.mercatorpuzzle.data.GeoJsonParser
 import kotlin.math.ceil
 
@@ -12,13 +13,11 @@ class GameController {
 
     }
 
-    private var currentGameCoinsAmount = 0
     private var currentLapCoinsAmount = 0
 
     fun newGame() {
-        currentGameCoinsAmount = 0
         MercatorApp.apply {
-            currentContinent = null
+            gameData = null
             shownCountries.clear()
             loadedCountries.clear()
             notificationsHelper.sendNewGameNotification()
@@ -27,7 +26,7 @@ class GameController {
 
     fun chooseContinent(continent: Continents) {
         MercatorApp.apply {
-            currentContinent = continent
+            gameData = GameData(continent = continent, timestampStart = System.currentTimeMillis())
             notificationsHelper.sendContinentChosenNotification(continent)
             GeoJsonParser(
                     completion = { countries ->
@@ -51,22 +50,19 @@ class GameController {
                 notificationsHelper.sendNewLapNotification(unfixedCountries.take(LAP_PORTION))
             }
             else {
+                gameData?.timestampFinish = System.currentTimeMillis()
                 notificationsHelper.sendFinishGameNotification()
             }
         }
     }
 
     fun addIncome(amount: Int) {
-        currentGameCoinsAmount += amount
         currentLapCoinsAmount += amount
+        MercatorApp.gameData!!.coins += amount
     }
 
     fun getLapIncome(): Int {
         return currentLapCoinsAmount
-    }
-
-    fun getGameIncome(): Int {
-        return currentGameCoinsAmount
     }
 
 }

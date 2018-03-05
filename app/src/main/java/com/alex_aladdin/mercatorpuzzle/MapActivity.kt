@@ -5,7 +5,6 @@ import android.graphics.PixelFormat
 import android.os.Build
 import android.os.Bundle
 import android.support.transition.Fade
-import android.support.transition.Fade.IN
 import android.support.transition.TransitionManager
 import android.support.v4.content.ContextCompat
 import android.support.v4.view.GravityCompat
@@ -21,6 +20,7 @@ import com.alex_aladdin.mercatorpuzzle.country.Country
 import com.alex_aladdin.mercatorpuzzle.country.LatitudeBoundaries
 import com.alex_aladdin.mercatorpuzzle.data.Continents
 import com.alex_aladdin.mercatorpuzzle.fragments.ContinentDialogFragment
+import com.alex_aladdin.mercatorpuzzle.fragments.FinishFragment
 import com.alex_aladdin.mercatorpuzzle.fragments.LapFragment
 import com.alex_aladdin.mercatorpuzzle.helpers.alpha
 import com.alex_aladdin.mercatorpuzzle.helpers.createBitmapFrom
@@ -66,6 +66,7 @@ class MapActivity : AppCompatActivity() {
     private var progressReceiver: BroadcastReceiver? = null
     private var countriesLoadedReceiver: BroadcastReceiver? = null
     private var newLapReceiver: BroadcastReceiver? = null
+    private var finishGameReceiver: BroadcastReceiver? = null
 
     var onLapFragmentReadyCallback = {
         supportFragmentManager.findFragmentByTag(LapFragment.TAG)?.let { lapFragment ->
@@ -77,6 +78,9 @@ class MapActivity : AppCompatActivity() {
             supportFragmentManager.popBackStack()
             MercatorApp.gameController.readyForNextLap()
         }
+    }
+    var onFinishFragmentReadyCallback = {
+        MercatorApp.gameController.newGame()
     }
     var onMenuClickCallback = { _: View ->
         layoutDrawer.openDrawer(Gravity.START)
@@ -91,8 +95,8 @@ class MapActivity : AppCompatActivity() {
 
         mapView.onCreate(savedInstanceState)
         initMap {
-            // First start or continent is not chosen
-            if (savedInstanceState == null || MercatorApp.currentContinent == null) {
+            // Game is not started
+            if (MercatorApp.gameData == null) {
                 MercatorApp.gameController.newGame()
             }
             // Recreation
@@ -185,13 +189,19 @@ class MapActivity : AppCompatActivity() {
         mySurfaceView.setZOrderMediaOverlay(true)               // Show MySurfaceView above MapView
         mySurfaceView.holder.setFormat(PixelFormat.TRANSPARENT) // Make MySurfaceView transparent
 
-        myFloatingActionButton.visibility = if (MercatorApp.currentContinent == null) View.GONE else View.VISIBLE
+        myFloatingActionButton.visibility = if (MercatorApp.shownCountries.isNotEmpty())
+            View.VISIBLE
+        else
+            View.GONE
     }
 
     private fun registerReceivers() {
         newGameReceiver = MercatorApp.notificationsHelper.registerNewGameReceiver {
             // Remove all polygons
             polygonsOnMap.entries.map { it.key }.forEach { country -> removePolygons(country) }
+
+            // Dispose all subscriptions
+            compositeDisposable.clear()
 
             // Zoom
             val mapboxMapNotNull = mapboxMap ?: return@registerNewGameReceiver
@@ -229,8 +239,18 @@ class MapActivity : AppCompatActivity() {
             // Caption
             topBarView.showText(getString(R.string.top_bar_new_game))
 
-            // FAB visibility
+            // Hide FAB
             myFloatingActionButton.visibility = View.GONE
+
+            // Remove FinishFragment if it is added
+            supportFragmentManager.findFragmentByTag(FinishFragment.TAG)?.let { finishFragment ->
+                supportFragmentManager
+                        .beginTransaction()
+                        .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                        .remove(finishFragment)
+                        .commit()
+                supportFragmentManager.popBackStack()
+            }
         }
 
         continentChosenReceiver = MercatorApp.notificationsHelper.registerContinentChosenReceiver { continent ->
@@ -243,13 +263,6 @@ class MapActivity : AppCompatActivity() {
             // Caption
             val caption = getString(R.string.top_bar_loading) + getString(continent.stringId)
             topBarView.showText(caption)
-
-            // FAB
-            myFloatingActionButton.currentCountry = null
-            val transitionFAB = Fade(IN)
-            transitionFAB.addTarget(myFloatingActionButton)
-            TransitionManager.beginDelayedTransition(layoutDrawer, transitionFAB)
-            myFloatingActionButton.visibility = View.VISIBLE
         }
 
         progressReceiver = MercatorApp.notificationsHelper.registerProgressReceiver { progress ->
@@ -262,7 +275,8 @@ class MapActivity : AppCompatActivity() {
             topBarView.hideText()
 
             // Randomize Countries' positions
-            val rect = MercatorApp.currentContinent
+            val rect = MercatorApp.gameData
+                    ?.continent
                     ?.toCountry()
                     ?.getRect()
                     ?: return@registerCountriesLoadedReceiver
@@ -284,10 +298,30 @@ class MapActivity : AppCompatActivity() {
             compositeDisposable.clear()
 
             // Focus camera on the continent and show countries
-            val continent = MercatorApp.currentContinent ?: return@registerNewLapReceiver
+            val continent = MercatorApp.gameData?.continent ?: return@registerNewLapReceiver
             focusCameraOn(country = continent.toCountry(), withPadding = false) {
                 showCountries(countries)
             }
+
+            // Show FAB
+            myFloatingActionButton.currentCountry = null
+            val transitionFAB = Fade(Fade.IN)
+            transitionFAB.addTarget(myFloatingActionButton)
+            TransitionManager.beginDelayedTransition(layoutDrawer, transitionFAB)
+            myFloatingActionButton.visibility = View.VISIBLE
+        }
+
+        finishGameReceiver = MercatorApp.notificationsHelper.registerFinishGameReceiver {
+            // Show FinishFragment
+            supportFragmentManager
+                    .beginTransaction()
+                    .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                    .add(R.id.layoutFragmentContainer, FinishFragment(), FinishFragment.TAG)
+                    .addToBackStack(FinishFragment.TAG)
+                    .commitAllowingStateLoss()
+
+            // Hide FAB
+            myFloatingActionButton.visibility = View.GONE
         }
     }
 
@@ -297,6 +331,7 @@ class MapActivity : AppCompatActivity() {
         progressReceiver?.let { MercatorApp.notificationsHelper.unregisterReceiver(it) }
         countriesLoadedReceiver?.let { MercatorApp.notificationsHelper.unregisterReceiver(it) }
         newLapReceiver?.let { MercatorApp.notificationsHelper.unregisterReceiver(it) }
+        finishGameReceiver?.let { MercatorApp.notificationsHelper.unregisterReceiver(it) }
     }
 
     override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
@@ -328,8 +363,18 @@ class MapActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
+        if (layoutDrawer.isDrawerOpen(Gravity.START)) {
+            layoutDrawer.closeDrawer(Gravity.START)
+            return@onBackPressed
+        }
+
         (supportFragmentManager.findFragmentByTag(LapFragment.TAG) as? LapFragment)?.let { lapFragment ->
             lapFragment.onBackPressed()
+            return@onBackPressed
+        }
+
+        (supportFragmentManager.findFragmentByTag(FinishFragment.TAG) as? FinishFragment)?.let { finishFragment ->
+            finishFragment.onBackPressed()
             return@onBackPressed
         }
 
@@ -434,11 +479,14 @@ class MapActivity : AppCompatActivity() {
                                 supportFragmentManager
                                         .beginTransaction()
                                         .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                                        .add(R.id.layoutDrawer, LapFragment(), LapFragment.TAG)
+                                        .add(R.id.layoutFragmentContainer, LapFragment(), LapFragment.TAG)
                                         .addToBackStack(LapFragment.TAG)
                                         .commitAllowingStateLoss()
                                 topBarView.hideText()
                             }
+
+                            // Hide FAB
+                            myFloatingActionButton.visibility = View.GONE
                         }
                 )
     }
@@ -457,6 +505,7 @@ class MapActivity : AppCompatActivity() {
             }
             topBarView.topMargin = statusBarHeight
             (progressBar.layoutParams as ViewGroup.MarginLayoutParams).topMargin = statusBarHeight
+            FinishFragment.topMargin = statusBarHeight
         }
     }
 

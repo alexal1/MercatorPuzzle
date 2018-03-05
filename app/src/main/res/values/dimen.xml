@@ -9,4 +9,5 @@
     <dimen name="my_surface_view_touch_side">10mm</dimen>
     <dimen name="name_view_glow_radius">8dp</dimen>
     <dimen name="coins_counter_view_glow_radius">8dp</dimen>
+    <dimen name="fragment_finish_top_margin">8dp</dimen>
 </resources>

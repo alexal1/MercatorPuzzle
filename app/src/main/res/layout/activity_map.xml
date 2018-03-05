@@ -82,6 +82,11 @@
             android:src="@drawable/mapbox_info_bg_selector"
             android:contentDescription="@string/mapbox_attributionsIconContentDescription"/>
 
+        <FrameLayout
+            android:id="@+id/layoutFragmentContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
     </RelativeLayout>
 
     <!-- The navigation drawer -->
