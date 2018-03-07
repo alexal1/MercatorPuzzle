@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 27
@@ -25,25 +26,30 @@ android {
 }
 
 ext {
-    supportLibVersion = '27.1.0'  // variable that can be referenced to keep support libs consistent
+    // Variables that can be referenced to keep libs consistent
+    supportLibVersion = '27.1.0'
+    roomVersion = '1.1.0-alpha3'
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile "com.android.support:appcompat-v7:${supportLibVersion}"
-    compile "com.android.support:design:${supportLibVersion}"
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    testCompile 'junit:junit:4.12'
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    compile 'com.mapbox.mapboxsdk:mapbox-android-sdk:5.4.1'
-    compile 'com.google.code.gson:gson:2.8.1'
-    compile 'io.reactivex.rxjava2:rxjava:2.1.7'
-    compile 'io.reactivex.rxjava2:rxkotlin:2.2.0'
-    compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
-    compile 'me.zhanghai.android.materialprogressbar:library:1.4.2'
+    implementation "com.android.support:appcompat-v7:${supportLibVersion}"
+    implementation "com.android.support:design:${supportLibVersion}"
+    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+    testImplementation 'junit:junit:4.12'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'com.mapbox.mapboxsdk:mapbox-android-sdk:5.4.1'
+    implementation 'com.google.code.gson:gson:2.8.1'
+    implementation 'io.reactivex.rxjava2:rxjava:2.1.7'
+    implementation 'io.reactivex.rxjava2:rxkotlin:2.2.0'
+    implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
+    implementation 'me.zhanghai.android.materialprogressbar:library:1.4.2'
+    implementation "android.arch.persistence.room:runtime:$roomVersion"
+    implementation "android.arch.persistence.room:rxjava2:$roomVersion"
+    kapt "android.arch.persistence.room:compiler:$roomVersion"
 }
 repositories {
     mavenCentral()
