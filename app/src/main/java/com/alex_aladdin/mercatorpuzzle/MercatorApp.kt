@@ -1,6 +1,7 @@
 package com.alex_aladdin.mercatorpuzzle
 
 import android.app.Application
+import android.arch.persistence.room.Room
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.PointF
@@ -9,6 +10,7 @@ import android.util.DisplayMetrics
 import android.util.Log
 import android.view.WindowManager
 import com.alex_aladdin.mercatorpuzzle.country.Country
+import com.alex_aladdin.mercatorpuzzle.data.AppDatabase
 import com.alex_aladdin.mercatorpuzzle.data.GameData
 import com.alex_aladdin.mercatorpuzzle.helpers.NotificationsHelper
 import java.util.*
@@ -22,11 +24,13 @@ class MercatorApp : Application() {
     companion object {
 
         private const val TAG = "MercatorApp"
+        private const val DATABASE_NAME = "mercator_database"
 
         lateinit var applicationContext: Context private set
         lateinit var screen: PointF private set
         lateinit var gameController: GameController
         lateinit var notificationsHelper: NotificationsHelper
+        lateinit var appDatabase: AppDatabase
 
         var gameData: GameData? = null
         val loadedCountries = ArrayList<Country>()
@@ -69,6 +73,7 @@ class MercatorApp : Application() {
         Companion.applicationContext = this.applicationContext
         Companion.gameController = GameController()
         Companion.notificationsHelper = NotificationsHelper()
+        Companion.appDatabase = Room.databaseBuilder(applicationContext, AppDatabase::class.java, DATABASE_NAME).build()
         Companion.countryColors = resources.getIntArray(R.array.country_colors)
 
         getScreenSize()

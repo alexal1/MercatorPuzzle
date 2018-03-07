@@ -1,6 +1,11 @@
 package com.alex_aladdin.mercatorpuzzle.data
 
-data class GameData(val continent: Continents,
+import android.arch.persistence.room.Entity
+import android.arch.persistence.room.PrimaryKey
+
+@Entity
+data class GameData(@PrimaryKey(autoGenerate = true) val id: Int = 0,
+                    val continent: Continents,
                     var coins: Int = 0,
                     val timestampStart: Long,
                     var timestampFinish: Long? = null)

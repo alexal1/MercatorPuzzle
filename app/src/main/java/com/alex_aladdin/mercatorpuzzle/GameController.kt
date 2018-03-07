@@ -1,14 +1,19 @@
 package com.alex_aladdin.mercatorpuzzle
 
+import android.util.Log
 import com.alex_aladdin.mercatorpuzzle.data.Continents
 import com.alex_aladdin.mercatorpuzzle.data.GameData
 import com.alex_aladdin.mercatorpuzzle.data.GeoJsonParser
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import kotlin.math.ceil
 
 class GameController {
 
     companion object {
 
+        const val TAG = "MercatorGameController"
         const val LAP_PORTION = 5
 
     }
@@ -51,8 +56,39 @@ class GameController {
             }
             else {
                 gameData?.timestampFinish = System.currentTimeMillis()
+                saveGame()
                 notificationsHelper.sendFinishGameNotification()
             }
+        }
+    }
+
+    fun saveGame() {
+        MercatorApp.apply {
+            val gd = gameData ?: return
+            Observable
+                    .fromCallable {
+                        appDatabase.gameDataDao().insert(gd)
+                    }
+                    .subscribeOn(Schedulers.single())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe {
+                        Log.i(TAG, "Game saved at row $it")
+                    }
+        }
+    }
+
+    fun loadAllGames(completion: (List<GameData>) -> Unit) {
+        MercatorApp.apply {
+            Observable
+                    .fromCallable {
+                        appDatabase.gameDataDao().getAll()
+                    }
+                    .subscribeOn(Schedulers.single())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe {
+                        Log.i(TAG, "Loaded ${it.size} games")
+                        completion(it)
+                    }
         }
     }
 
