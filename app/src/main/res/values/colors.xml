@@ -4,9 +4,12 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
     <color name="grey80">#CC000000</color>
     <color name="grey80_solid">#333333</color>
     <color name="grey60">#99000000</color>
+    <color name="grey40_solid">#999999</color>
+    <color name="grey20_solid">#CCCCCC</color>
     <color name="transparent">#00000000</color>
     <color name="country_fixed">#B9C9CA</color>
     <color name="gold">#FFDA44</color>

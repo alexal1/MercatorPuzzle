@@ -10,7 +10,7 @@ interface GameDataDao {
     @Insert
     fun insert(gameData: GameData): Long
 
-    @Query("SELECT * FROM GameData")
+    @Query("SELECT * FROM GameData ORDER BY timestampStart DESC")
     fun getAll(): List<GameData>
 
 }

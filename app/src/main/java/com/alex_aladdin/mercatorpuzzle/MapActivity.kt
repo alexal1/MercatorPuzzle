@@ -1,6 +1,7 @@
 package com.alex_aladdin.mercatorpuzzle
 
 import android.content.BroadcastReceiver
+import android.content.Intent
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.Bundle
@@ -173,7 +174,8 @@ class MapActivity : AppCompatActivity() {
                 }
 
                 R.id.nav_results -> {
-                    // TODO: do something
+                    val i = Intent(this@MapActivity, ResultsActivity::class.java)
+                    startActivity(i)
                 }
 
                 R.id.nav_feedback -> {

@@ -55,7 +55,6 @@ class GameController {
                 notificationsHelper.sendNewLapNotification(unfixedCountries.take(LAP_PORTION))
             }
             else {
-                gameData?.timestampFinish = System.currentTimeMillis()
                 saveGame()
                 notificationsHelper.sendFinishGameNotification()
             }
@@ -65,6 +64,8 @@ class GameController {
     fun saveGame() {
         MercatorApp.apply {
             val gd = gameData ?: return
+            gd.timestampFinish = System.currentTimeMillis()
+            gd.progress = loadedCountries.count { it.isFixed }
             Observable
                     .fromCallable {
                         appDatabase.gameDataDao().insert(gd)

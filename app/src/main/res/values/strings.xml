@@ -32,4 +32,8 @@
     <string name="finish_fragment_countries">countries</string>
     <string name="finish_fragment_minutes">minutes</string>
     <string name="finish_fragment_coins">coins</string>
+
+    <string name="results_activity_title">My Results</string>
+    <string name="results_activity_minutes">minutes</string>
+    <string name="results_activity_seconds">seconds</string>
 </resources>
