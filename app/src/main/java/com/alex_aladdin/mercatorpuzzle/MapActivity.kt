@@ -566,6 +566,9 @@ class MapActivity : AppCompatActivity() {
         // Clear static objects
         Companion.polygonsOnMap.clear()
         Companion.markersOnMap.clear()
+
+        // Dispose all subscriptions
+        compositeDisposable.clear()
     }
 
     /**
