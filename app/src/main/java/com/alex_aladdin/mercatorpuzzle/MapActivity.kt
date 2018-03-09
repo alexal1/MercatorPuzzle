@@ -186,6 +186,9 @@ class MapActivity : AppCompatActivity() {
         navigationView.setNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_new_game -> {
+                    if (MercatorApp.gameData?.isStarted() == true) {
+                        MercatorApp.gameController.saveGame()
+                    }
                     MercatorApp.gameController.newGame()
                 }
 
