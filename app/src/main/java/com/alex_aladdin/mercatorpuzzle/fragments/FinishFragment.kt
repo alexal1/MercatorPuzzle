@@ -54,23 +54,23 @@ class FinishFragment : Fragment() {
         val contextNotNull = context ?: return
         val gameData = MercatorApp.gameData ?: return
 
-        val title = contextNotNull.getString(gameData.continent.stringId) +
+        val title = contextNotNull.getString(gameData.continent!!.stringId) +
                 contextNotNull.getString(R.string.finish_fragment_title_done)
-        val timestampFinish = gameData.timestampFinish ?: gameData.timestampStart
-        var minutes = (timestampFinish - gameData.timestampStart) / 60_000L
-        val seconds = (timestampFinish - gameData.timestampStart) % 60_000L / 1000L
+        var minutes = (gameData.timestampFinish!! - gameData.timestampStart!!) / 60_000L
+        val seconds = (gameData.timestampFinish!! - gameData.timestampStart!!) % 60_000L / 1000L
         if (seconds >= 30) {
             minutes += 1
         }
 
         textTitle?.text = title
-        textCountriesCounter?.text = gameData.continent.count.toString()
+        textCountriesCounter?.text = gameData.continent!!.count.toString()
         textMinutesCounter?.text = minutes.toString()
         textCoinsCounter?.text = gameData.coins.toString()
     }
 
     private fun setListeners() {
         buttonMenu.setOnClickListener((activity as? MapActivity)?.onMenuClickCallback)
+        buttonResults.setOnClickListener((activity as? MapActivity)?.onResultsClickCallback)
 
         val alphaRespond = { v: View, event: MotionEvent ->
             when (event.action) {

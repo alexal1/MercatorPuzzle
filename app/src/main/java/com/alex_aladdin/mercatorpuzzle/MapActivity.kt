@@ -86,6 +86,10 @@ class MapActivity : AppCompatActivity() {
     var onMenuClickCallback = { _: View ->
         layoutDrawer.openDrawer(Gravity.START)
     }
+    var onResultsClickCallback = { _: View ->
+        val i = Intent(this@MapActivity, ResultsActivity::class.java)
+        startActivity(i)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,15 +100,27 @@ class MapActivity : AppCompatActivity() {
 
         mapView.onCreate(savedInstanceState)
         initMap {
-            // Game is not started
-            if (MercatorApp.gameData == null) {
-                MercatorApp.gameController.newGame()
-            }
-            // Recreation
-            else {
-                val shownCountriesCopy = MercatorApp.shownCountries.sortedBy { !it.isFixed }
-                MercatorApp.shownCountries.clear()
-                showCountries(shownCountriesCopy)
+            when {
+                // Game is not initialized or not started
+                MercatorApp.gameData?.isStarted() != true -> MercatorApp.gameController.newGame()
+                // Game is finished
+                MercatorApp.gameData?.isFinished() == true -> {
+                    // Show FinishFragment if it is not added yet
+                    if (supportFragmentManager.findFragmentByTag(FinishFragment.TAG) == null) {
+                        supportFragmentManager
+                                .beginTransaction()
+                                .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                                .add(R.id.layoutFragmentContainer, FinishFragment(), FinishFragment.TAG)
+                                .addToBackStack(FinishFragment.TAG)
+                                .commitAllowingStateLoss()
+                    }
+                }
+                // Recreation
+                else -> {
+                    val shownCountriesCopy = MercatorApp.shownCountries.sortedBy { !it.isFixed }
+                    MercatorApp.shownCountries.clear()
+                    showCountries(shownCountriesCopy)
+                }
             }
         }
 

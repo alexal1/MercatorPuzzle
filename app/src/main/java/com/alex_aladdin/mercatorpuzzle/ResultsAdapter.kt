@@ -23,24 +23,24 @@ class ResultsAdapter(private val items: List<GameData>) : RecyclerView.Adapter<R
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val gameData = items[position]
         holder.apply {
-            textContinent.text = gameData.continent.name
+            textContinent.text = gameData.continent!!.name
             textCoins.text = gameData.coins.toString()
 
             val date = DateFormat
                     .getDateInstance(DateFormat.MEDIUM, Locale.getDefault())
-                    .format(Date(gameData.timestampStart))
+                    .format(Date(gameData.timestampStart!!))
             val time = DateFormat
                     .getTimeInstance(DateFormat.SHORT, Locale.getDefault())
-                    .format(Date(gameData.timestampStart))
+                    .format(Date(gameData.timestampStart!!))
             val totalDate = "$date $time"
             textDate.text = totalDate
 
-            val progress = "${gameData.progress}/${gameData.continent.count}"
+            val progress = "${gameData.progress}/${gameData.continent!!.count}"
             textProgress.text = progress
 
             val timestampFinish = gameData.timestampFinish ?: return
-            val minutes = (timestampFinish - gameData.timestampStart) / 60_000L
-            val seconds = (timestampFinish - gameData.timestampStart) % 60_000L / 1000L
+            val minutes = (timestampFinish - gameData.timestampStart!!) / 60_000L
+            val seconds = (timestampFinish - gameData.timestampStart!!) % 60_000L / 1000L
             val totalTime = minutes.toString() + " " +
                     MercatorApp.applicationContext.getString(R.string.results_activity_minutes) +
                     " " + seconds.toString() + " " +

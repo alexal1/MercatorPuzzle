@@ -22,7 +22,7 @@ class GameController {
 
     fun newGame() {
         MercatorApp.apply {
-            gameData = null
+            gameData = GameData()
             shownCountries.clear()
             loadedCountries.clear()
             notificationsHelper.sendNewGameNotification()
@@ -31,7 +31,8 @@ class GameController {
 
     fun chooseContinent(continent: Continents) {
         MercatorApp.apply {
-            gameData = GameData(continent = continent, timestampStart = System.currentTimeMillis())
+            gameData?.continent = continent
+            gameData?.timestampStart = System.currentTimeMillis()
             notificationsHelper.sendContinentChosenNotification(continent)
             GeoJsonParser(
                     completion = { countries ->
