@@ -1,4 +1,4 @@
-package com.alex_aladdin.mercatorpuzzle
+package com.alex_aladdin.mercatorpuzzle.activities
 
 import android.content.BroadcastReceiver
 import android.content.Intent
@@ -16,6 +16,8 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import com.alex_aladdin.mercatorpuzzle.MercatorApp
+import com.alex_aladdin.mercatorpuzzle.R
 import com.alex_aladdin.mercatorpuzzle.country.CountriesDisposition
 import com.alex_aladdin.mercatorpuzzle.country.Country
 import com.alex_aladdin.mercatorpuzzle.country.LatitudeBoundaries

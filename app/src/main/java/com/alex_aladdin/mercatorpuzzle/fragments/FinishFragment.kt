@@ -6,7 +6,7 @@ import android.os.Bundle
 import android.support.constraint.ConstraintSet
 import android.support.v4.app.Fragment
 import android.view.*
-import com.alex_aladdin.mercatorpuzzle.MapActivity
+import com.alex_aladdin.mercatorpuzzle.activities.MapActivity
 import com.alex_aladdin.mercatorpuzzle.MercatorApp
 import com.alex_aladdin.mercatorpuzzle.R
 import kotlinx.android.synthetic.main.fragment_finish.*

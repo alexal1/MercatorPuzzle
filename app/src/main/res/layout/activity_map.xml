@@ -6,7 +6,7 @@
     android:id="@+id/layoutDrawer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.alex_aladdin.mercatorpuzzle.MapActivity">
+    tools:context="com.alex_aladdin.mercatorpuzzle.activities.MapActivity">
 
     <!-- The main content view -->
     <RelativeLayout

@@ -1,7 +1,7 @@
 package com.alex_aladdin.mercatorpuzzle.country
 
 import android.util.Log
-import com.alex_aladdin.mercatorpuzzle.MapActivity
+import com.alex_aladdin.mercatorpuzzle.activities.MapActivity
 import com.mapbox.mapboxsdk.geometry.LatLng
 import java.util.*
 

@@ -13,7 +13,7 @@ import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import com.alex_aladdin.google_maps_utils.PolyUtil
-import com.alex_aladdin.mercatorpuzzle.MapActivity
+import com.alex_aladdin.mercatorpuzzle.activities.MapActivity
 import com.alex_aladdin.mercatorpuzzle.MercatorApp
 import com.alex_aladdin.mercatorpuzzle.R
 import com.alex_aladdin.mercatorpuzzle.animators.CountriesAnimator

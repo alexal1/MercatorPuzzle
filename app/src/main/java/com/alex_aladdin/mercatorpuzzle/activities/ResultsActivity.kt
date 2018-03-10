@@ -1,8 +1,11 @@
-package com.alex_aladdin.mercatorpuzzle
+package com.alex_aladdin.mercatorpuzzle.activities
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
+import com.alex_aladdin.mercatorpuzzle.MercatorApp
+import com.alex_aladdin.mercatorpuzzle.R
+import com.alex_aladdin.mercatorpuzzle.adapters.ResultsAdapter
 import kotlinx.android.synthetic.main.activity_results.*
 
 class ResultsActivity : AppCompatActivity() {

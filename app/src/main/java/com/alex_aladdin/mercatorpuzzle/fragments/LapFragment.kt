@@ -14,7 +14,7 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import com.alex_aladdin.mercatorpuzzle.MapActivity
+import com.alex_aladdin.mercatorpuzzle.activities.MapActivity
 import com.alex_aladdin.mercatorpuzzle.MercatorApp
 import com.alex_aladdin.mercatorpuzzle.R
 import kotlinx.android.synthetic.main.fragment_lap.*
