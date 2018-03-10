@@ -200,7 +200,8 @@ class MapActivity : AppCompatActivity() {
                 }
 
                 R.id.nav_feedback -> {
-                    // TODO: do something
+                    val i = Intent(this@MapActivity, FeedbackActivity::class.java)
+                    startActivity(i)
                 }
             }
             layoutDrawer.closeDrawer(GravityCompat.START)
