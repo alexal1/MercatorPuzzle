@@ -7,7 +7,7 @@ import android.arch.persistence.room.PrimaryKey
 @Entity
 data class GameData(@PrimaryKey(autoGenerate = true) val id: Int,
                     var continent: Continents?,
-                    var progress: Int?,
+                    var progress: Int,
                     var coins: Int,
                     var timestampStart: Long?,
                     var timestampFinish: Long?) {
@@ -16,7 +16,7 @@ data class GameData(@PrimaryKey(autoGenerate = true) val id: Int,
     constructor() : this(
             id = 0,
             continent = null,
-            progress = null,
+            progress = 0,
             coins = 0,
             timestampStart = null,
             timestampFinish = null

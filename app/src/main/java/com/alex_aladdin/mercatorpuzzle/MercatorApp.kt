@@ -25,6 +25,8 @@ class MercatorApp : Application() {
 
         private const val TAG = "MercatorApp"
         private const val DATABASE_NAME = "mercator_database"
+        const val SHARED_PREFERENCES_NAME = "mercator_shared_preferences"
+        const val SHARED_PREFERENCES_FEEDBACK_GIVEN = "is_feedback_given"
 
         lateinit var applicationContext: Context private set
         lateinit var screen: PointF private set
@@ -32,6 +34,7 @@ class MercatorApp : Application() {
         lateinit var notificationsHelper: NotificationsHelper
         lateinit var appDatabase: AppDatabase
 
+        var flagDoNotShowFeedbackDialog = false
         var gameData: GameData? = null
         val loadedCountries = ArrayList<Country>()
         val shownCountries = ArrayList<Country>()

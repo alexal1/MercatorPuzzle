@@ -50,6 +50,7 @@ class GameController {
     fun readyForNextLap() {
         currentLapCoinsAmount = 0
         MercatorApp.apply {
+            gameData!!.progress += shownCountries.size
             shownCountries.clear()
             val unfixedCountries = loadedCountries.filter { !it.isFixed }.shuffled()
             if (unfixedCountries.isNotEmpty()) {
@@ -66,7 +67,6 @@ class GameController {
         MercatorApp.apply {
             val gd = gameData ?: return
             gd.timestampFinish = System.currentTimeMillis()
-            gd.progress = loadedCountries.count { it.isFixed }
             Observable
                     .fromCallable {
                         appDatabase.gameDataDao().insert(gd)

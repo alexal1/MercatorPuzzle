@@ -39,4 +39,9 @@
 
     <string name="feedback_activity_title">Feedback</string>
     <string name="feedback_activity_url">https://goo.gl/forms/Ji074BAYZ6o4jTm73</string>
+
+    <string name="feedback_dialog_title">Feedback time</string>
+    <string name="feedback_dialog_message">Could you please fill in an anonymous poll?</string>
+    <string name="feedback_dialog_no">Later</string>
+    <string name="feedback_dialog_do_not_show">Don\'t show</string>
 </resources>

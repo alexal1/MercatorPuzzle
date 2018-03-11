@@ -1,6 +1,7 @@
 package com.alex_aladdin.mercatorpuzzle.activities
 
 import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
 import android.os.Build
@@ -23,6 +24,7 @@ import com.alex_aladdin.mercatorpuzzle.country.Country
 import com.alex_aladdin.mercatorpuzzle.country.LatitudeBoundaries
 import com.alex_aladdin.mercatorpuzzle.data.Continents
 import com.alex_aladdin.mercatorpuzzle.fragments.ContinentDialogFragment
+import com.alex_aladdin.mercatorpuzzle.fragments.FeedbackDialogFragment
 import com.alex_aladdin.mercatorpuzzle.fragments.FinishFragment
 import com.alex_aladdin.mercatorpuzzle.fragments.LapFragment
 import com.alex_aladdin.mercatorpuzzle.helpers.alpha
@@ -333,6 +335,15 @@ class MapActivity : AppCompatActivity() {
             transitionFAB.addTarget(myFloatingActionButton)
             TransitionManager.beginDelayedTransition(layoutDrawer, transitionFAB)
             myFloatingActionButton.visibility = View.VISIBLE
+
+            // Show FeedbackDialogFragment
+            if (MercatorApp.gameData!!.progress > 0
+                    && !MercatorApp.flagDoNotShowFeedbackDialog
+                    && !getSharedPreferences(MercatorApp.SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
+                            .getBoolean(MercatorApp.SHARED_PREFERENCES_FEEDBACK_GIVEN, false)) {
+                val feedbackDialogFragment = FeedbackDialogFragment()
+                feedbackDialogFragment.show(supportFragmentManager, FeedbackDialogFragment.TAG)
+            }
         }
 
         finishGameReceiver = MercatorApp.notificationsHelper.registerFinishGameReceiver {
