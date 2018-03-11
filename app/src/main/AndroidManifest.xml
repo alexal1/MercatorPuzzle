@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.alex_aladdin.mercatorpuzzle">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name="MercatorApp"
         android:allowBackup="true"
