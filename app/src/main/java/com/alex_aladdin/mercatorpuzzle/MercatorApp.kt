@@ -27,6 +27,7 @@ class MercatorApp : Application() {
         private const val DATABASE_NAME = "mercator_database"
         const val SHARED_PREFERENCES_NAME = "mercator_shared_preferences"
         const val SHARED_PREFERENCES_FEEDBACK_GIVEN = "is_feedback_given"
+        const val RS_MAX_BLUR_RADIUS = 25f
 
         lateinit var applicationContext: Context private set
         lateinit var screen: PointF private set

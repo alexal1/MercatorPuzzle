@@ -2,10 +2,13 @@ package com.alex_aladdin.mercatorpuzzle.custom_views
 
 import android.content.Context
 import android.graphics.Color
+import android.os.Build
 import android.support.v4.widget.TextViewCompat
 import android.util.AttributeSet
 import android.util.TypedValue
+import android.view.View
 import android.widget.TextView
+import com.alex_aladdin.mercatorpuzzle.MercatorApp
 import com.alex_aladdin.mercatorpuzzle.R
 import java.lang.Math.round
 
@@ -23,7 +26,10 @@ class NameView : TextView {
 
     constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(context, attrs, defStyle)
 
-    private val glowRadius = resources.getDimension(R.dimen.name_view_glow_radius)
+    private val glowRadius = minOf(
+            resources.getDimension(R.dimen.name_view_glow_radius),
+            MercatorApp.RS_MAX_BLUR_RADIUS
+    )
 
     var countryName: String? = null
 
@@ -48,6 +54,12 @@ class NameView : TextView {
     var isGlowEnabled = true
 
     init {
+        // Fixes setShadowLayer()'s crash
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
+                && Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
+            this@NameView.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+        }
+
         TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
                 this@NameView,
                 1,

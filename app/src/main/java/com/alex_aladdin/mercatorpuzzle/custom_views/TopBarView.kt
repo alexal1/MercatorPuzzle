@@ -92,7 +92,7 @@ class TopBarView : RelativeLayout {
                     if (nameView.completeness != 0f) {
                         nameView.completeness = 0f
                     }
-                    val br = 2 * FlagView.MAX_BLUR_RADIUS * nd - FlagView.MAX_BLUR_RADIUS
+                    val br = 2 * MercatorApp.RS_MAX_BLUR_RADIUS * nd - MercatorApp.RS_MAX_BLUR_RADIUS
                     flagView.blurRadius = br.toFloat()
                 }
 

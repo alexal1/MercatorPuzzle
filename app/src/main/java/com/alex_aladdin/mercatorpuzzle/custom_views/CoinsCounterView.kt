@@ -1,9 +1,12 @@
 package com.alex_aladdin.mercatorpuzzle.custom_views
 
 import android.content.Context
+import android.os.Build
 import android.support.v4.content.ContextCompat
 import android.util.AttributeSet
+import android.view.View
 import android.widget.TextView
+import com.alex_aladdin.mercatorpuzzle.MercatorApp
 import com.alex_aladdin.mercatorpuzzle.R
 
 class CoinsCounterView : TextView {
@@ -22,7 +25,18 @@ class CoinsCounterView : TextView {
 
     private val colorWhite = ContextCompat.getColor(context, R.color.white)
     private val colorGold = ContextCompat.getColor(context, R.color.gold)
-    private val glowRadius = resources.getDimension(R.dimen.coins_counter_view_glow_radius)
+    private val glowRadius = minOf(
+            resources.getDimension(R.dimen.coins_counter_view_glow_radius),
+            MercatorApp.RS_MAX_BLUR_RADIUS
+    )
+
+    init {
+        // Fixes setShadowLayer()'s crash
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
+                && Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
+            this@CoinsCounterView.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+        }
+    }
 
     private var currentValue = 0
         set(value) {

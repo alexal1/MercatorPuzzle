@@ -9,6 +9,7 @@ import android.support.v8.renderscript.ScriptIntrinsicBlur
 import android.util.AttributeSet
 import android.util.Log
 import android.widget.ImageView
+import com.alex_aladdin.mercatorpuzzle.MercatorApp
 import com.alex_aladdin.mercatorpuzzle.R
 import com.alex_aladdin.mercatorpuzzle.helpers.copyInto
 
@@ -18,7 +19,6 @@ class FlagView : ImageView {
     companion object {
 
         private const val TAG = "MercatorFlagView"
-        const val MAX_BLUR_RADIUS = 25f
 
     }
 
@@ -76,12 +76,12 @@ class FlagView : ImageView {
 
     private fun Bitmap.roundedCorners(): Bitmap {
         val bitmapInput = this@roundedCorners
-        val bitmapWidth = bitmapInput.width + MAX_BLUR_RADIUS.toInt() * 2
-        val bitmapHeight = bitmapInput.height + MAX_BLUR_RADIUS.toInt() * 2
+        val bitmapWidth = bitmapInput.width + MercatorApp.RS_MAX_BLUR_RADIUS.toInt() * 2
+        val bitmapHeight = bitmapInput.height + MercatorApp.RS_MAX_BLUR_RADIUS.toInt() * 2
         val bitmapOutput = Bitmap.createBitmap(bitmapWidth, bitmapHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmapOutput)
         val clipPath = Path()
-        val padding = MAX_BLUR_RADIUS
+        val padding = MercatorApp.RS_MAX_BLUR_RADIUS
         val rect = RectF(
                 padding,
                 padding,
