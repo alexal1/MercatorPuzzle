@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "18823799743",
+    "firebase_url": "https://mercator-puzzle.firebaseio.com",
+    "project_id": "mercator-puzzle",
+    "storage_bucket": "mercator-puzzle.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:18823799743:android:e48f6c47315ce54d",
+        "android_client_info": {
+          "package_name": "com.alex_aladdin.mercatorpuzzle"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "18823799743-49528vbqbekrnsk4me15nskkg8jk5v80.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCc13IpQXNJd5jfUX0VOlGIN_XHCvmQie0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
