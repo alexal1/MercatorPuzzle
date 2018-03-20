@@ -66,6 +66,7 @@ class GameController {
     fun saveGame() {
         MercatorApp.apply {
             val gd = gameData ?: return
+            if (!gd.isFinished()) return
             gd.timestampFinish = System.currentTimeMillis()
             Observable
                     .fromCallable {

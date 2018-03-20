@@ -75,6 +75,8 @@ class MapActivity : AppCompatActivity() {
 
     var onLapFragmentReadyCallback = {
         supportFragmentManager.findFragmentByTag(LapFragment.TAG)?.let { lapFragment ->
+            // Check for case when user has opened another activity already
+            if (!lapFragment.isResumed) return@let
             supportFragmentManager
                     .beginTransaction()
                     .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
@@ -123,7 +125,7 @@ class MapActivity : AppCompatActivity() {
                 else -> {
                     val shownCountriesCopy = MercatorApp.shownCountries.sortedBy { !it.isFixed }
                     MercatorApp.shownCountries.clear()
-                    showCountries(shownCountriesCopy)
+                    showCountries(shownCountriesCopy, afterCameraFocusing = false)
                 }
             }
         }
@@ -324,10 +326,7 @@ class MapActivity : AppCompatActivity() {
             compositeDisposable.clear()
 
             // Focus camera on the continent and show countries
-            val continent = MercatorApp.gameData?.continent ?: return@registerNewLapReceiver
-            focusCameraOn(country = continent.toCountry(), withPadding = false) {
-                showCountries(countries)
-            }
+            showCountries(countries, afterCameraFocusing = true)
 
             // Show FAB
             myFloatingActionButton.currentCountry = null
@@ -347,16 +346,19 @@ class MapActivity : AppCompatActivity() {
         }
 
         finishGameReceiver = MercatorApp.notificationsHelper.registerFinishGameReceiver {
-            // Show FinishFragment
-            supportFragmentManager
-                    .beginTransaction()
-                    .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                    .add(R.id.layoutFragmentContainer, FinishFragment(), FinishFragment.TAG)
-                    .addToBackStack(FinishFragment.TAG)
-                    .commitAllowingStateLoss()
+            // Check for case when user has started a new game already
+            if (MercatorApp.gameData?.isFinished() == true) {
+                // Show FinishFragment
+                supportFragmentManager
+                        .beginTransaction()
+                        .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                        .add(R.id.layoutFragmentContainer, FinishFragment(), FinishFragment.TAG)
+                        .addToBackStack(FinishFragment.TAG)
+                        .commitAllowingStateLoss()
 
-            // Hide FAB
-            myFloatingActionButton.visibility = View.GONE
+                // Hide FAB
+                myFloatingActionButton.visibility = View.GONE
+            }
         }
     }
 
@@ -488,7 +490,7 @@ class MapActivity : AppCompatActivity() {
         })
     }
 
-    private fun showCountries(countries: List<Country>) {
+    private fun showCountries(countries: List<Country>, afterCameraFocusing: Boolean) {
         for (country in countries) {
             country.color = if (country.isFixed) MercatorApp.countryFixedColor else MercatorApp.obtainColor()
             MercatorApp.shownCountries.add(country)
@@ -498,8 +500,22 @@ class MapActivity : AppCompatActivity() {
                     this@MapActivity.subscribeOn(country.currentCenterObservable)
             )
         }
-        myFloatingActionButton.currentCountry = MercatorApp.shownCountries.firstOrNull()
-        mySurfaceView.showCountries(MercatorApp.shownCountries)
+
+        fun doFinally() {
+            myFloatingActionButton.currentCountry = MercatorApp.shownCountries.firstOrNull()
+            mySurfaceView.showCountries(MercatorApp.shownCountries)
+        }
+
+        if (afterCameraFocusing) {
+            // Focus camera on the continent
+            val continent = MercatorApp.gameData?.continent ?: return
+            focusCameraOn(country = continent.toCountry(), withPadding = false) {
+                doFinally()
+            }
+        }
+        else {
+            doFinally()
+        }
     }
 
     private fun subscribeOn(observable: Observable<Country>): Disposable {
