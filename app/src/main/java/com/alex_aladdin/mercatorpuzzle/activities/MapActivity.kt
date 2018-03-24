@@ -22,6 +22,7 @@ import com.alex_aladdin.mercatorpuzzle.R
 import com.alex_aladdin.mercatorpuzzle.country.CountriesDisposition
 import com.alex_aladdin.mercatorpuzzle.country.Country
 import com.alex_aladdin.mercatorpuzzle.country.LatitudeBoundaries
+import com.alex_aladdin.mercatorpuzzle.custom_views.ZoomView
 import com.alex_aladdin.mercatorpuzzle.data.Continents
 import com.alex_aladdin.mercatorpuzzle.fragments.ContinentDialogFragment
 import com.alex_aladdin.mercatorpuzzle.fragments.FeedbackDialogFragment
@@ -31,6 +32,7 @@ import com.alex_aladdin.mercatorpuzzle.helpers.alpha
 import com.alex_aladdin.mercatorpuzzle.helpers.createBitmapFrom
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.annotations.*
+import com.mapbox.mapboxsdk.camera.CameraPosition
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.constants.MapboxConstants
 import com.mapbox.mapboxsdk.geometry.LatLng
@@ -166,7 +168,6 @@ class MapActivity : AppCompatActivity() {
                 MotionEvent.ACTION_DOWN -> {
                     mySurfaceView.clearCanvas()
                     mySurfaceView.isEnabled = false
-                    myFloatingActionButton.isFocusedOnCountry = false
                 }
 
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
@@ -178,13 +179,23 @@ class MapActivity : AppCompatActivity() {
     }
 
     private fun setListeners() {
-        myFloatingActionButton.setOnClickListener {
-            myFloatingActionButton.currentCountry?.let { focusCameraOn(it) }
-            // Clear TopBarView's currentCountry if we've focused on another Country
-            if (myFloatingActionButton.currentCountry != topBarView.currentCountry) {
-                topBarView.currentCountry = null
+        fun handleZoomClick(direction: ZoomView.Zoom) {
+            val builder = CameraPosition.Builder()
+            zoomView.currentCountry?.currentCenter?.let { center -> builder.target(center) }
+            val maxZoom = mapboxMap?.maxZoomLevel ?: return
+            val minZoom = mapboxMap?.minZoomLevel ?: return
+            var zoom = mapboxMap?.cameraPosition?.zoom ?: return
+            zoom = when (direction) {
+                ZoomView.Zoom.IN -> minOf(zoom + 1, maxZoom)
+                ZoomView.Zoom.OUT -> maxOf(zoom - 1, minZoom)
             }
+            builder.zoom(zoom)
+            mapboxMap?.animateCamera(CameraUpdateFactory.newCameraPosition(builder.build()), 1000)
+
+            mySurfaceView.countriesAnimator?.cancel()
+            mySurfaceView.clearCanvas()
         }
+        zoomView.onButtonClick = ::handleZoomClick
     }
 
     private fun setMenu() {
@@ -217,7 +228,7 @@ class MapActivity : AppCompatActivity() {
         mySurfaceView.setZOrderMediaOverlay(true)               // Show MySurfaceView above MapView
         mySurfaceView.holder.setFormat(PixelFormat.TRANSPARENT) // Make MySurfaceView transparent
 
-        myFloatingActionButton.visibility = if (MercatorApp.shownCountries.isNotEmpty())
+        zoomView.visibility = if (MercatorApp.shownCountries.isNotEmpty())
             View.VISIBLE
         else
             View.GONE
@@ -267,8 +278,8 @@ class MapActivity : AppCompatActivity() {
             // Caption
             topBarView.showText(getString(R.string.top_bar_new_game))
 
-            // Hide FAB
-            myFloatingActionButton.visibility = View.GONE
+            // Hide ZoomView
+            zoomView.visibility = View.GONE
 
             // Remove FinishFragment if it is added
             supportFragmentManager.findFragmentByTag(FinishFragment.TAG)?.let { finishFragment ->
@@ -328,12 +339,12 @@ class MapActivity : AppCompatActivity() {
             // Focus camera on the continent and show countries
             showCountries(countries, afterCameraFocusing = true)
 
-            // Show FAB
-            myFloatingActionButton.currentCountry = null
-            val transitionFAB = Fade(Fade.IN)
-            transitionFAB.addTarget(myFloatingActionButton)
-            TransitionManager.beginDelayedTransition(layoutDrawer, transitionFAB)
-            myFloatingActionButton.visibility = View.VISIBLE
+            // Show ZoomView
+            zoomView.currentCountry = null
+            val transitionZoomView = Fade(Fade.IN)
+            transitionZoomView.addTarget(zoomView)
+            TransitionManager.beginDelayedTransition(layoutDrawer, transitionZoomView)
+            zoomView.visibility = View.VISIBLE
 
             // Show FeedbackDialogFragment
             if (MercatorApp.gameData!!.progress > 0
@@ -356,8 +367,8 @@ class MapActivity : AppCompatActivity() {
                         .addToBackStack(FinishFragment.TAG)
                         .commitAllowingStateLoss()
 
-                // Hide FAB
-                myFloatingActionButton.visibility = View.GONE
+                // Hide ZoomView
+                zoomView.visibility = View.GONE
             }
         }
     }
@@ -495,14 +506,14 @@ class MapActivity : AppCompatActivity() {
             country.color = if (country.isFixed) MercatorApp.countryFixedColor else MercatorApp.obtainColor()
             MercatorApp.shownCountries.add(country)
             compositeDisposable.addAll(
-                    myFloatingActionButton.subscribeOn(country.currentCenterObservable),
+                    zoomView.subscribeOn(country.currentCenterObservable),
                     topBarView.subscribeOn(country.currentCenterObservable),
                     this@MapActivity.subscribeOn(country.currentCenterObservable)
             )
         }
 
         fun doFinally() {
-            myFloatingActionButton.currentCountry = MercatorApp.shownCountries.firstOrNull()
+            zoomView.currentCountry = MercatorApp.shownCountries.firstOrNull()
             mySurfaceView.showCountries(MercatorApp.shownCountries)
         }
 
@@ -535,8 +546,8 @@ class MapActivity : AppCompatActivity() {
                                         .commitAllowingStateLoss()
                                 topBarView.hideText()
 
-                                // Hide FAB
-                                myFloatingActionButton.visibility = View.GONE
+                                // Hide ZoomView
+                                zoomView.visibility = View.GONE
                             }
                         }
                 )

@@ -9,6 +9,7 @@
     <color name="grey80_solid">#333333</color>
     <color name="grey60">#99000000</color>
     <color name="grey40_solid">#999999</color>
+    <color name="grey20">#33000000</color>
     <color name="grey20_solid">#CCCCCC</color>
     <color name="transparent">#00000000</color>
     <color name="country_fixed">#B9C9CA</color>

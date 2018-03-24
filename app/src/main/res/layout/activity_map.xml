@@ -40,21 +40,14 @@
             app:mpb_showProgressBackground="false"
             style="@style/Widget.MaterialProgressBar.ProgressBar.Horizontal"/>
 
-        <com.alex_aladdin.mercatorpuzzle.custom_views.MyFloatingActionButton
-            android:id="@+id/myFloatingActionButton"
+        <com.alex_aladdin.mercatorpuzzle.custom_views.ZoomView
+            android:id="@+id/zoomView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
-            android:layout_margin="16dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:src="@drawable/ic_location_searching_white_18dp"
-            app:fabSize="auto"
-            app:elevation="4dp"
-            app:pressedTranslationZ="8dp"
-            tools:ignore="RelativeOverlap" />
+            android:layout_margin="16dp" />
 
         <ImageView
             android:id="@+id/imageMapboxLogo"
