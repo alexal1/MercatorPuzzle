@@ -29,8 +29,8 @@ android {
 ext {
     // Variables that can be referenced to keep libs consistent
     supportLibVersion = '27.1.0'
-    roomVersion = '1.1.0-alpha3'
-    firebaseVersion = '11.8.0'
+    roomVersion = '1.1.0-beta1'
+    firebaseVersion = '12.0.0'
 }
 
 dependencies {
@@ -43,7 +43,7 @@ dependencies {
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
     testImplementation 'junit:junit:4.12'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'com.mapbox.mapboxsdk:mapbox-android-sdk:5.5.0'
+    implementation 'com.mapbox.mapboxsdk:mapbox-android-sdk:5.5.1'
     implementation 'com.google.code.gson:gson:2.8.2'
     implementation 'io.reactivex.rxjava2:rxjava:2.1.7'
     implementation 'io.reactivex.rxjava2:rxkotlin:2.2.0'
