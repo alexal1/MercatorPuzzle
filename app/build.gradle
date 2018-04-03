@@ -30,7 +30,7 @@ ext {
     // Variables that can be referenced to keep libs consistent
     supportLibVersion = '27.1.0'
     roomVersion = '1.1.0-beta1'
-    firebaseVersion = '12.0.0'
+    firebaseVersion = '12.0.1'
 }
 
 dependencies {
