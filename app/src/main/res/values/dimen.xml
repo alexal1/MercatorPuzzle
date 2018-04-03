@@ -10,4 +10,7 @@
     <dimen name="name_view_glow_radius">8dp</dimen>
     <dimen name="coins_counter_view_glow_radius">8dp</dimen>
     <dimen name="fragment_finish_top_margin">8dp</dimen>
+    <dimen name="zoom_view_button_size">48dp</dimen>
+    <dimen name="zoom_view_button_margin">4dp</dimen>
+    <dimen name="zoom_view_button_translation_z">4dp</dimen>
 </resources>

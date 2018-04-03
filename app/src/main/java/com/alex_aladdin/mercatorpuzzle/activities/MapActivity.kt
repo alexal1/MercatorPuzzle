@@ -146,6 +146,7 @@ class MapActivity : AppCompatActivity() {
             // Save object
             this.mapboxMap = mapboxMap
             mySurfaceView.mapboxMap = mapboxMap
+            zoomView.mapboxMap = mapboxMap
 
             // Configure appearance
             mapboxMap.uiSettings.isRotateGesturesEnabled = false
@@ -158,6 +159,8 @@ class MapActivity : AppCompatActivity() {
             imageMapboxAttribution.setOnClickListener {
                 attributionView.callOnClick()
             }
+
+            mapboxMap.addOnCameraMoveListener(zoomView::onMapChanged)
 
             // Invoke callback
             completion()
@@ -188,6 +191,7 @@ class MapActivity : AppCompatActivity() {
             zoom = when (direction) {
                 ZoomView.Zoom.IN -> minOf(zoom + 1, maxZoom)
                 ZoomView.Zoom.OUT -> maxOf(zoom - 1, minZoom)
+                ZoomView.Zoom.NO -> zoom
             }
             builder.zoom(zoom)
             mapboxMap?.animateCamera(CameraUpdateFactory.newCameraPosition(builder.build()), 1000)
@@ -567,6 +571,7 @@ class MapActivity : AppCompatActivity() {
             }
             topBarView.topMargin = statusBarHeight
             (progressBar.layoutParams as ViewGroup.MarginLayoutParams).topMargin = statusBarHeight
+            zoomView.translationY = statusBarHeight / 2f
             FinishFragment.topMargin = statusBarHeight
         }
     }
