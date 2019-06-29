@@ -12,6 +12,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+        <!-- Disable Advertising ID collection -->
+        <meta-data android:name="google_analytics_adid_collection_enabled" android:value="false" />
+
+        <!-- Disable SSAID collection -->
+        <meta-data android:name="google_analytics_ssaid_collection_enabled" android:value="false" />
+
         <activity android:name=".activities.MapActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
