@@ -40,7 +40,8 @@ class FlagView : ImageView {
         set(value) {
             field = value
             if (blurredBitmap != null && flagBitmap != null) {
-                blurBitmap(flagBitmap!!, blurredBitmap!!, value)
+                // TODO: fix the crash
+                // blurBitmap(flagBitmap!!, blurredBitmap!!, value)
             }
             invalidate()
         }
